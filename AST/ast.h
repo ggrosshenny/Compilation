@@ -56,7 +56,7 @@ void print_ast(ast* tree, int indent);
 
 
 /**
-* @brief print_ast Print the given ast
+* @brief ast_free free the AST
 * @param tree
 */
 void ast_free(ast* tree);
@@ -66,7 +66,7 @@ void ast_free(ast* tree);
 
   // Operations
 /**
-* @brief ast_new_operation Create a new operation node in the given ast
+* @brief ast_new_binaryOperation Create a new binary operation node in the given ast
 * @param type type of the node
 * @param left0 left child
 * @param right0 right child
@@ -75,10 +75,9 @@ ast* ast_new_binaryOperation(enum ast_type type, ast* left0, ast* right0);
 
 
 /**
-* @brief ast_new_operation Create a new operation node in the given ast
+* @brief ast_new_operation Create a new unary operation node in the given ast
 * @param type type of the node
-* @param left0 left child
-* @param right0 right child
+* @param operand child
 */
 ast* ast_new_unaryOperation(enum ast_type type, ast* operand);
 
@@ -96,12 +95,6 @@ ast* ast_new_functionDefinition(ast* id, ast* arguments, ast* functionBody);
 
 
   // Only main(), printf(str), printi(int) availiable
-/**
-* @brief ast_new_function Create a new function node in the given ast (i.e : function declaration)
-* @param type type of the node
-* @param identifier id of the function
-* @param functionBody0 body of the function
-*/
 /**
 * @brief ast_new_functionDefinition Create a new function call node in the given ast
 * @param type type of the node
