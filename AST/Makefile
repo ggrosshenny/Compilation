@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-W -Wall
 LDFLAGS=
 TESTAST=test_AST
-TESTSYMTBL = test_symTable
+TESTSYMTBL=test_symTable
 
 testast: $(TESTAST)
 
@@ -21,4 +21,5 @@ clean:
 	rm -rf *.o
 
 mrproper: clean
-	rm -rf $(EXEC)
+	rm -rf $(TESTAST)
+	rm -rf $(TESTSYMTBL)

@@ -22,6 +22,28 @@ int hash(char* key)
 }
 
 
+void symbol_printList(symbol* symbolList)
+{
+  symbol* temp = symbolList;
+  while(temp != NULL)
+  {
+      printf("\t%s\t%d\n", temp->identifier, temp->value);
+      temp = temp->next;
+  }
+}
+
+
+void symTable_print(symTable* table)
+{
+  int i = 0;
+  printf("Symbol table :\n");
+  for(i=0; i<ST_HASHTABLE_SIZE; i++)
+  {
+    symbol_printList(table->table[i]);
+  }
+}
+
+
 // ==============
 // Main functions
 
@@ -110,7 +132,7 @@ symTable* symTable_add(symTable* table, symbol* symbol0)
 }
 
 
-symTable* symTable_newTemp(symTable* table, int value)
+symbol* symTable_newTemp(symTable* table, int value)
 {
   char* tempName = malloc(ST_MAX_TEMPIDENTIFIER_LENGTH * sizeof(char));
   // Create the temp name
@@ -130,16 +152,22 @@ symTable* symTable_newTemp(symTable* table, int value)
     table->nb_temp--;
     return NULL;
   }
-  return table;
+  return newTemp;
 }
 
 
-symTable* symTable_addConst(symTable* table, char* constName, int value)
+symbol* symTable_addConst(symTable* table, char* constName, int value)
 {
   // Create the new temp variable
+  symTable* temp = NULL;
   symbol* newConst = malloc(sizeof(symbol));
   newConst->identifier = strndup(constName, ST_MAX_IDENTIFIER_LENGTH);
   newConst->isConstant = true;
   newConst->value = value;
-  return symTable_add(table, newConst);
+  temp = symTable_add(table, newConst);
+  if(temp == NULL)
+  {
+      return NULL;
+  }
+  return newConst;
 }

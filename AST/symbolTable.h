@@ -38,6 +38,20 @@ typedef struct s_symTable
 int hash(char* key);
 
 
+/**
+* @brief symbol_printList print the given list of symbols
+* @param symbolList list of symbols
+*/
+void symbol_printList(symbol* symbolList);
+
+
+/**
+* @brief symTable_print print the symbol table
+* @param table table to print
+*/
+void symTable_print(symTable* table);
+
+
 // ==============
 // Main functions
 
@@ -77,7 +91,7 @@ symTable* symTable_add(symTable* table, symbol* symbol0);
  * @param tempName name of the temporary variable
  * @param value value of the temporary variable
  **/
-symTable* symTable_newTemp(symTable* table, int value);
+symbol* symTable_newTemp(symTable* table, int value);
 
 
 /**
@@ -86,7 +100,7 @@ symTable* symTable_newTemp(symTable* table, int value);
  * @param tempName name of the constante
  * @param value value of constante
  **/
-symTable* symTable_addConst(symTable* table, char* constName, int value);
+symbol* symTable_addConst(symTable* table, char* constName, int value);
 
 
 /**
