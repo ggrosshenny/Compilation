@@ -100,7 +100,7 @@ symbol* symTable_newTemp(symTable* table, int value);
  * @param tempName name of the constante
  * @param value value of constante
  **/
-symbol* symTable_addConst(symTable* table, char* constName, int value);
+symbol* symTable_addConst(symTable* table, char* constName);
 
 
 /**

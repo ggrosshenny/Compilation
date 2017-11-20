@@ -16,10 +16,9 @@ int main()
   assert(testSymbol->isConstant == false);
   assert(testSymbol->value == 42);
 
-  testSymbol = symTable_addConst(test, "lol", 17);
+  testSymbol = symTable_addConst(test, "lol");
   assert(strcmp(testSymbol->identifier, "lol")==0);
   assert(testSymbol->isConstant == true);
-  assert(testSymbol->value == 17);
 
   testSymbol = symTable_newTemp(test, 50);
   assert(strcmp(testSymbol->identifier, "$temp_1")==0);
@@ -31,12 +30,11 @@ int main()
   assert(testSymbol->isConstant == false);
   assert(testSymbol->value == 67);
 
-  testSymbol = symTable_addConst(test, "const", 54);
+  testSymbol = symTable_addConst(test, "const");
   assert(strcmp(testSymbol->identifier, "const")==0);
   assert(testSymbol->isConstant == true);
-  assert(testSymbol->value == 54);
 
-  testSymbol = symTable_addConst(test, "const", 72);
+  testSymbol = symTable_addConst(test, "const");
   assert(testSymbol == NULL);
 
   symTable_print(test);

@@ -27,7 +27,14 @@ void symbol_printList(symbol* symbolList)
   symbol* temp = symbolList;
   while(temp != NULL)
   {
-      printf("\t%s\t%d\n", temp->identifier, temp->value);
+      if(temp->isConstant)
+      {
+        printf("\t%s\tNONE\n", temp->identifier);
+      }
+      else
+      {
+        printf("\t%s\t%d\n", temp->identifier, temp->value);
+      }
       temp = temp->next;
   }
 }
@@ -156,14 +163,14 @@ symbol* symTable_newTemp(symTable* table, int value)
 }
 
 
-symbol* symTable_addConst(symTable* table, char* constName, int value)
+symbol* symTable_addConst(symTable* table, char* constName)
 {
   // Create the new temp variable
   symTable* temp = NULL;
   symbol* newConst = malloc(sizeof(symbol));
   newConst->identifier = strndup(constName, ST_MAX_IDENTIFIER_LENGTH);
   newConst->isConstant = true;
-  newConst->value = value;
+  newConst->value = 0;
   temp = symTable_add(table, newConst);
   if(temp == NULL)
   {

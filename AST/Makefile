@@ -1,12 +1,12 @@
 CC=gcc
 CFLAGS=-W -Wall
 LDFLAGS=
-TESTAST=test_AST
-TESTSYMTBL=test_symTable
+TESTAST = test_AST
+TESTSYMBL = test_symTable
+TESTASTTOSYMBL = test_
 
-testast: $(TESTAST)
-
-testSYMTable: $(TESTSYMTBL)
+test_astToSymTable: ast.o symbolTable.o astToST.o test_ASTToSymTable.o
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 test_symTable: symbolTable.o test_symTable.o
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -23,3 +23,4 @@ clean:
 mrproper: clean
 	rm -rf $(TESTAST)
 	rm -rf $(TESTSYMTBL)
+	rm -rf $(TESTASTTOSYMBL)
