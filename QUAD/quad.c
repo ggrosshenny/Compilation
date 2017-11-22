@@ -71,7 +71,7 @@ void quad_add(quadList* last_quad, enum ast_type type_ast, symbol* arg_1, symbol
 }
 
 void concat(quadList* q1, quadList* q2){
-  if(q1->list != NULL)
+  if(q1->list != NULL && q2->list != NULL)
   {
     q1->last->next = q2->list;
     q1->last = q2->last;
@@ -80,6 +80,18 @@ void concat(quadList* q1, quadList* q2){
   }
 }
 
+void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, codegen* right){
+  symbol* s = symTable_newTemp(symbol_table, 0);
+  cg->result = s;
+  if(right == NULL)
+    concat(left->code, right->code);
+  concat(cg->code, left->code);
+  if(right != NULL)
+    quad_add(cg->code, type, left->result, right->result, cg->result);
+  else
+    quad_add(cg->code, type, left->result, right->result, cg->result);
+
+}
 
 codegen* codegen_ast(ast* ast, symTable* symbol_table){
 
@@ -98,11 +110,7 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
       left = codegen_ast(ast->component.operation.left, symbol_table);
       right = codegen_ast(ast->component.operation.right, symbol_table);
 
-      s = symTable_newTemp(symbol_table, 0);
-      cg->result = s;
-      concat(left->code, right->code);
-      concat(cg->code, left->code);
-      quad_add(cg->code, AST_OP_ADD, left->result, right->result, cg->result);
+      codegen_ast_aux(cg->code, AST_OP_ADD, left->result, right->result, cg->result);
 
       break;
 
@@ -111,11 +119,7 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
           left = codegen_ast(ast->component.operation.left, symbol_table);
           right = codegen_ast(ast->component.operation.right, symbol_table);
 
-          s = symTable_newTemp(symbol_table, 0);
-          cg->result = s;
-          concat(left->code, right->code);
-          concat(cg->code, left->code);
-          quad_add(cg->code, AST_OP_SUB, left->result, right->result, cg->result);
+          codegen_ast_aux(cg->code, AST_OP_SUB, left->result, right->result, cg->result);
 
       break;
 
@@ -124,11 +128,7 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
           left = codegen_ast(ast->component.operation.left, symbol_table);
           right = codegen_ast(ast->component.operation.right, symbol_table);
 
-          s = symTable_newTemp(symbol_table, 0);
-          cg->result = s;
-          concat(left->code, right->code);
-          concat(cg->code, left->code);
-          quad_add(cg->code, AST_OP_MULT, left->result, right->result, cg->result);
+          codegen_ast_aux(cg->code, AST_OP_MULT, left->result, right->result, cg->result);
 
       break;
 
@@ -137,11 +137,7 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
           left = codegen_ast(ast->component.operation.left, symbol_table);
           right = codegen_ast(ast->component.operation.right, symbol_table);
 
-          s = symTable_newTemp(symbol_table, 0);
-          cg->result = s;
-          concat(left->code, right->code);
-          concat(cg->code, left->code);
-          quad_add(cg->code, AST_OP_DIV, left->result, right->result, cg->result);
+          codegen_ast_aux(cg->code, AST_OP_DIV, left->result, right->result, cg->result);
 
       break;
 
@@ -150,10 +146,7 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
       left = codegen_ast(ast->component.operation.left, symbol_table);
       right = NULL;
 
-      s = symTable_newTemp(symbol_table, 0);
-      cg->result = s;
-      concat(cg->code, left->code);
-      quad_add(cg->code, AST_OP_MINUS, left->result, NULL, cg->result);
+      codegen_ast_aux(cg->code, AST_OP_MINUS, left->result, NULL, cg->result);
       break;
 
 
