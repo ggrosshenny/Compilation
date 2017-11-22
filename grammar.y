@@ -46,7 +46,7 @@ statement:
 
 expression:
   expression '+' expression   { $$ = ast_new_binaryOperation(AST_OP_ADD, $1, $3); }
-  | expression '-' expression { $$ = ast_new_binaryOperation(AST_OP_MINUS, $1, $3); }
+  | expression '-' expression { $$ = ast_new_binaryOperation(AST_OP_SUB, $1, $3); }
   | expression '*' expression { $$ = ast_new_binaryOperation(AST_OP_MULT, $1, $3); }
   | expression '/' expression { $$ = ast_new_binaryOperation(AST_OP_DIV, $1, $3); }
   | '(' expression ')'        { $$ = $2; }
