@@ -4,7 +4,7 @@ LDFLAGS=
 TESTAST = test_AST
 TESTSYMBL = test_symTable
 TESTASTTOSYMBL = test_astToSymTable
-TESTQUAD = test_quad.c
+TESTQUAD = test_quad
 TESTQUADTOMIPS = test_quadToMIPS
 
 tests: test_astToSymTable test_symTable test_AST test_quad test_quadToMIPS 
