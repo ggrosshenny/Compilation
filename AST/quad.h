@@ -87,6 +87,10 @@ void concat(quadList* q1, quadList* q2);
  **/
 void quad_add(quadList* quad, enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result);
 
+
+void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, codegen* right, symTable* symbol_table);
+
+
 /**
 * @brief codegen_ast  Generate quads through recursive AST analysis
 * @param ast Tree to analyze
