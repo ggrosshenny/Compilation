@@ -42,6 +42,11 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.operation.left, indent);
                           print_ast(tree->component.operation.right, indent);
                           break;
+      case AST_OP_AFCT  : indent++;
+                          printf("Affectation\n");
+                          print_ast(tree->component.operation.left, indent);
+                          print_ast(tree->component.operation.right, indent);
+                          break;
       // Unary operations
       case AST_OP_INCR :  indent++;
                           printf("Incrementation\n");
@@ -93,15 +98,19 @@ void ast_free(ast* tree)
                         ast_free(tree->component.operation.right);
                         free(tree);
                         break;
-    case AST_OP_DIV :   ast_free(tree->component.operation.left);
+    case AST_OP_DIV  :  ast_free(tree->component.operation.left);
                         ast_free(tree->component.operation.right);
                         free(tree);
                         break;
-    // Unary operations
-    case AST_OP_INCR :  ast_free(tree->component.operation.left);
+    case AST_OP_AFCT  : ast_free(tree->component.operation.left);
+                        ast_free(tree->component.operation.left);
                         free(tree);
                         break;
-    case AST_OP_DECR :  ast_free(tree->component.operation.left);
+    // Unary operations
+    case AST_OP_INCR  : ast_free(tree->component.operation.left);
+                        free(tree);
+                        break;
+    case AST_OP_DECR  : ast_free(tree->component.operation.left);
                         free(tree);
                         break;
     case AST_OP_MINUS : ast_free(tree->component.operation.left);

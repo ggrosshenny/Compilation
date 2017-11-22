@@ -14,7 +14,8 @@ int hash(char* key)
   // Hash
 	for(unsigned int i = 0 ; i < strlen(key) ; i++)
 	{
-		h = (h << 5) | (h >> 27); // cyclic shift of bytes
+    // cyclic shift of bytes
+		h = (h << 5) | (h >> 27);
 		h += (int) key[i];
 	}
   h = h % ST_HASHTABLE_SIZE;
@@ -63,6 +64,7 @@ symTable* symTable_init()
     newTable->table[i] = NULL;
   }
   newTable->nb_temp = 0;
+  newTable->nb_VarInStack = 0;
   return newTable;
 }
 
@@ -113,6 +115,7 @@ symbol* symTable_lookUp(symTable* table, char* name)
 symTable* symTable_add(symTable* table, symbol* symbol0)
 {
   int k_hash = hash(symbol0->identifier);
+  symbol0->stackPosition = -1;
   symbol* temp;
   // If the liste is empty
   if(table->table[k_hash] == NULL)

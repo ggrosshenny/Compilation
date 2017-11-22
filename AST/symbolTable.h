@@ -14,16 +14,26 @@
 
 typedef struct s_symbol
 {
+  // Identifier of the symbol
   char* identifier;
+  // Bool to identifiate if the symbol is a constant or a temporary variable
   bool isConstant;
+  // Value of the temporary
   int value;
+  // Position of the symbol in stack (used for translation from quad to MIPS)
+  int stackPosition;
+  // Next symbol in the list
   struct s_symbol* next;
 } symbol;
 
 typedef struct s_symTable
 {
+  // Hash table
   symbol* table[ST_HASHTABLE_SIZE];
+  // Number of temporary variables in the table
   int nb_temp;
+  // Number of variable in the stack (used for translation from quad to MIPS)
+  int nb_VarInStack;
 } symTable;
 
 
