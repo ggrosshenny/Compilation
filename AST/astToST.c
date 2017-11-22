@@ -9,7 +9,7 @@ ast* genSymTable_ast(ast* tree, symTable* st)
   {
     // leafs
     case AST_INT     :  temp = genSymTable_newTemp(tree, st);
-                        free(tree);
+                        ast_free(tree);
                         tree = ast_new_identifier(temp->identifier);
                         break;
     case AST_ID      :  genSymTable_const(tree, st);
