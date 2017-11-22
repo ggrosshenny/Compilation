@@ -26,7 +26,7 @@ FILE* genMIPS_init(char* fileName, symTable* table);
 * @param quads list of quads
 * @param table symbol table
 */
-void genMIPS_genCode(char* fileName, /*Quad* quads ,*/ symTable table);
+void genMIPS_genCode(char* fileName, quadList* quads , symTable table);
 
 
 /**

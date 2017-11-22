@@ -4,14 +4,10 @@
 
 ast* genSymTable_ast(ast* tree, symTable* st)
 {
-  symbol* temp = NULL;
   switch(tree->type)
   {
     // leafs
-    case AST_INT     :  temp = genSymTable_newTemp(tree, st);
-                        ast_free(tree);
-                        tree = ast_new_identifier(temp->identifier);
-                        break;
+    case AST_INT     :  break;
     case AST_ID      :  genSymTable_const(tree, st);
                         break;
     // Binary operations

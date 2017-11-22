@@ -117,13 +117,13 @@ void ast_free(ast* tree)
                         free(tree);
                         break;
     // Function
-    case AST_FUNC_DEF : free(tree->component.function.identifier);
-                        ast_free(tree->component.function.arguments);
+    case AST_FUNC_DEF : ast_free(tree->component.function.arguments);
                         ast_free(tree->component.function.body);
+                        free(tree->component.function.identifier);
                         free(tree);
                         break;
-    case AST_FUNC_CALL: free(tree->component.function.identifier);
-                        ast_free(tree->component.function.arguments);
+    case AST_FUNC_CALL: ast_free(tree->component.function.arguments);
+                        free(tree->component.function.identifier);
                         free(tree);
                         break;
 
@@ -140,7 +140,7 @@ void ast_free(ast* tree)
 
 ast* ast_new_binaryOperation(enum ast_type type, ast* left0, ast* right0)
 {
-  ast* newAst = malloc(sizeof(ast));
+  ast* newAst = calloc(1, sizeof(ast));
   newAst->type = type;
   newAst->component.operation.left = left0;
   newAst->component.operation.right = right0;
@@ -150,7 +150,7 @@ ast* ast_new_binaryOperation(enum ast_type type, ast* left0, ast* right0)
 
 ast* ast_new_unaryOperation(enum ast_type type, ast* operand)
 {
-  ast* newAst = malloc(sizeof(ast));
+  ast* newAst = calloc(1, sizeof(ast));
   newAst->type = type;
   newAst->component.operation.left = operand;
   newAst->component.operation.right = NULL;
@@ -161,7 +161,7 @@ ast* ast_new_unaryOperation(enum ast_type type, ast* operand)
 
 ast* ast_new_functionDefinition(ast* id, ast* arguments, ast* functionBody)
 {
-  ast* newAst = malloc(sizeof(ast));
+  ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_FUNC_DEF;
   newAst->component.function.identifier = id;
   newAst->component.function.arguments = arguments;
@@ -172,7 +172,7 @@ ast* ast_new_functionDefinition(ast* id, ast* arguments, ast* functionBody)
 
 ast* ast_new_functionCall(ast* id, ast* arguments)
 {
-  ast* newAst = malloc(sizeof(ast));
+  ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_FUNC_CALL;
   newAst->component.function.identifier = id;
   newAst->component.function.arguments = arguments;
@@ -186,7 +186,7 @@ ast* ast_new_functionCall(ast* id, ast* arguments)
 
 ast* ast_new_number(int value)
 {
-  ast* newAst = malloc(sizeof(ast));
+  ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_INT;
   newAst->component.number = value;
   return newAst;
@@ -195,7 +195,7 @@ ast* ast_new_number(int value)
 
 ast* ast_new_identifier(char* id)
 {
-  ast* newAst = malloc(sizeof(ast));
+  ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_ID;
   newAst->component.identifier = strndup(id, MAX_IDENTIFIER_LENGHT);
   return newAst;

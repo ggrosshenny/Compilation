@@ -29,7 +29,47 @@ FILE* genMIPS_init(char* fileName, symTable* table)
     } // While
   } // For
 
-  fprintf(fileMIPS, "\n\n.text\n");
+  fprintf(fileMIPS, "\n\n.text\n__main:\n");
 
   return fileMIPS;
 }
+
+
+void genMIPS_genCode(char* fileName, quadList* quads , symTable table)
+{
+
+  quad* ql = quads->list;
+  // Get the MIPS code for all quads
+  while(ql != NULL)
+  {
+    
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//

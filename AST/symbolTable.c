@@ -58,7 +58,7 @@ void symTable_print(symTable* table)
 
 symTable* symTable_init()
 {
-  symTable* newTable = malloc(sizeof(symTable));
+  symTable* newTable = calloc(1, sizeof(symTable));
   for(int i=0; i<ST_HASHTABLE_SIZE; i++)
   {
     newTable->table[i] = NULL;
@@ -144,14 +144,14 @@ symTable* symTable_add(symTable* table, symbol* symbol0)
 
 symbol* symTable_newTemp(symTable* table, int value)
 {
-  char* tempName = malloc(ST_MAX_TEMPIDENTIFIER_LENGTH * sizeof(char));
+  char* tempName = calloc(ST_MAX_TEMPIDENTIFIER_LENGTH+1, sizeof(char));
   // Create the temp name
   // temp variable begin with $temp_
-  snprintf(tempName, ST_MAX_TEMPIDENTIFIER_LENGTH, "$temp_%d", table->nb_temp);
+  snprintf(tempName, ST_MAX_TEMPIDENTIFIER_LENGTH+1, "$temp_%d", table->nb_temp);
   table->nb_temp++;
 
   // Create the new temp variable
-  symbol* newTemp = malloc(sizeof(symbol));
+  symbol* newTemp = calloc(1, sizeof(symbol));
   newTemp->identifier = tempName;
   newTemp->isConstant = false;
   newTemp->value = value;
@@ -170,7 +170,7 @@ symbol* symTable_addConst(symTable* table, char* constName)
 {
   // Create the new temp variable
   symTable* temp = NULL;
-  symbol* newConst = malloc(sizeof(symbol));
+  symbol* newConst = calloc(1, sizeof(symbol));
   newConst->identifier = strndup(constName, ST_MAX_IDENTIFIER_LENGTH);
   newConst->isConstant = true;
   newConst->value = 0;
