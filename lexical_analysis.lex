@@ -10,7 +10,7 @@ TYPE      int
 KEYWORDS  if|else|while|for
 NUMBER    0|([1-9][0-9]*)
 ID        [a-zA-Z_]([a-zA-Z0-9_])*
-OP        \+|-|\+\+|--|\*|\/|\(|\)|\;|=
+OP        \+|-|\+\+|--|\*|\/|\(|\)|\;|=|==|\<|\<=|\>|\>=|!=
 
 %%
 
@@ -32,7 +32,9 @@ OP        \+|-|\+\+|--|\*|\/|\(|\)|\;|=
 
 {OP}       { return yytext[0]; }
 
-[\ \t\n]   { return yytext[0]; }
+[\n{}]     { return yytext[0]; }
+
+
 
 
 %%
