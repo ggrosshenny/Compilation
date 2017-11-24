@@ -2,7 +2,7 @@
 #include "quad.h"
 
 quad* quad_init(){
-  quad *newQuad = malloc(sizeof(quad));
+  quad *newQuad = calloc(1, sizeof(quad));
   newQuad->arg1 = NULL;
   newQuad->arg2 = NULL;
   newQuad->res = NULL;
@@ -11,7 +11,7 @@ quad* quad_init(){
 }
 
 quadList* quadList_init(){
-  quadList* newQuadList = malloc(sizeof(quadList));
+  quadList* newQuadList = calloc(1, sizeof(quadList));
   newQuadList->list = NULL;
   newQuadList->nextQuad = 0;
   newQuadList->last = NULL;
@@ -19,74 +19,126 @@ quadList* quadList_init(){
   return newQuadList;
 }
 
-void init_existing_quad(quad* newQuad, enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result){
-  newQuad = malloc(sizeof(quad));
+quad* init_existing_quad(enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result){
+  quad* newQuad = calloc(1, sizeof(quad));
 
   newQuad->type = type_ast;
   newQuad->arg1 = arg_1;
   newQuad->arg2 = arg_2;
   newQuad->res = result;
   newQuad->next = NULL;
+
+  return newQuad;
+}
+
+void quadList_print(quadList* ql){
+  quad* temp = ql->list;
+  printf("QUADLIST'S TYPES: ");
+  while(temp != NULL){
+    switch(temp->type)
+    {
+      case AST_INT     :  printf("AST_INT "); break;
+      case AST_ID      :  printf("AST_ID "); break;
+      case AST_OP_ADD  :  printf("AST_OP_ADD "); break;
+      case AST_OP_SUB  :  printf("AST_OP_SUB "); break;
+      case AST_OP_MULT :  printf("AST_OP_MULT "); break;
+      case AST_OP_DIV  :  printf("AST_OP_DIV "); break;
+      case AST_OP_AFCT  : printf("AST_OP_AFCT "); break;
+      case AST_OP_INCR  : printf("AST_OP_INCR "); break;
+      case AST_OP_DECR  : printf("AST_OP_DECR "); break;
+      case AST_OP_MINUS : printf("AST_OP_MINUS "); break;
+      case AST_FUNC_DEF : printf("AST_FUNC_DEF "); break;
+      case AST_FUNC_CALL: printf("AST_FUNC_CALL "); break;
+      default         :   break;
+    }
+    temp = temp->next;
+  }
+  printf("\n");
 }
 
 codegen* codegen_init(){
-  codegen *newCg = malloc(sizeof(codegen));
+  codegen *newCg = calloc(1, sizeof(codegen));
   newCg->result = NULL;
   newCg->code = quadList_init();
   return newCg;
 }
 
 
-void quad_free(quad* quadToBeFreed){
-  free(quadToBeFreed->arg1);
-  free(quadToBeFreed->arg2);
-  free(quadToBeFreed->res);
-  free(quadToBeFreed->next);
-  free(quadToBeFreed);
+void quad_free(quad* quadWantsToBeFreed){
+  free(quadWantsToBeFreed);
 }
 
 
-void quadList_free_keepList(quadList* ql)
-{
+void quadList_free_keepList(quadList* ql){
   free(ql);
+}
+
+void quadList_free(quadList* ql){
+
+  quad* temp;
+  while(ql->list != NULL){
+    temp = ql->list;
+    ql->list = ql->list->next;
+    quad_free(temp);
+  }
+  free(ql);
+}
+
+void codegen_free(codegen* cg){
+
+  if(cg->code != NULL){
+    quadList_free(cg->code);
+  }
+  free(cg);
+}
+
+void codegen_keepQuadList_free(codegen *cg){
+  free(cg);
 }
 
 
 void quad_add(quadList* last_quad, enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result){
-  quad *newQuad = NULL;
+  quad *newQuad = init_existing_quad(type_ast, arg_1, arg_2, result);
 
-  init_existing_quad(newQuad, type_ast, arg_1, arg_2, result);
-
-  if(last_quad->list == NULL)
-  {
+  if(last_quad->list == NULL){
     last_quad->list = newQuad;
     last_quad->last = last_quad->list;
   }
-  else
-  {
+  else{
       last_quad->last->next = newQuad;
       last_quad->last = last_quad->last->next;
   }
 
 }
 
-void concat(quadList* q1, quadList* q2){
-  if(q1->list != NULL && q2->list != NULL)
-  {
-    q1->last->next = q2->list;
-    q1->last = q2->last;
-    q1->nextQuad += q2->nextQuad;
-    quadList_free_keepList(q2);
+
+quadList* concat(quadList* q1, quadList* q2){
+  quadList* newQl = q1;
+
+  if(newQl->list != NULL && q2->list != NULL){
+
+    newQl->last->next = q2->list;
+    newQl->last = q2->last;
+    newQl->nextQuad += q2->nextQuad;
   }
+  else{
+    if(newQl->list == NULL){
+
+      newQl = q2;
+    }
+  }
+  quadList_free_keepList(q2);
+  return newQl;
 }
+
 
 void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, codegen* right, symTable* symbol_table){
   symbol* s = symTable_newTemp(symbol_table, 0);
   cg->result = s;
-  
+
   if(right != NULL)
-    concat(left->code, right->code);
-  concat(cg->code, left->code);
+    left->code = concat(left->code, right->code);
+  cg->code = concat(cg->code, left->code);
 
   if(right != NULL)
     quad_add(cg->code, type, left->result, right->result, cg->result);
@@ -95,9 +147,8 @@ void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, code
 
 }
 
-codegen* codegen_ast(ast* ast, symTable* symbol_table){
+codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
-  codegen* cg = codegen_init();
   codegen* left = codegen_init();
   codegen* right = codegen_init();
   //symbol* s;
@@ -109,8 +160,8 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
 
     case AST_OP_ADD:
       printf("add \n");
-      left = codegen_ast(ast->component.operation.left, symbol_table);
-      right = codegen_ast(ast->component.operation.right, symbol_table);
+      left = codegen_ast(left, ast->component.operation.left, symbol_table);
+      right = codegen_ast(right, ast->component.operation.right, symbol_table);
 
       codegen_ast_operations(cg, AST_OP_ADD, left, right, symbol_table);
 
@@ -118,35 +169,34 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
 
     case AST_OP_SUB:
 
-          left = codegen_ast(ast->component.operation.left, symbol_table);
-          right = codegen_ast(ast->component.operation.right, symbol_table);
+      left = codegen_ast(left, ast->component.operation.left, symbol_table);
+      right = codegen_ast(cg, ast->component.operation.right, symbol_table);
 
-          codegen_ast_operations(cg, AST_OP_SUB, left, right, symbol_table);
+      codegen_ast_operations(cg, AST_OP_SUB, left, right, symbol_table);
 
       break;
 
     case AST_OP_MULT:
-          printf("mult \n");
-          left = codegen_ast(ast->component.operation.left, symbol_table);
-          right = codegen_ast(ast->component.operation.right, symbol_table);
+      printf("mult \n");
+      left = codegen_ast(left, ast->component.operation.left, symbol_table);
+      right = codegen_ast(right, ast->component.operation.right, symbol_table);
 
-          codegen_ast_operations(cg, AST_OP_MULT, left, right, symbol_table);
+      codegen_ast_operations(cg, AST_OP_MULT, left, right, symbol_table);
 
       break;
 
     case AST_OP_DIV:
 
-          left = codegen_ast(ast->component.operation.left, symbol_table);
-          right = codegen_ast(ast->component.operation.right, symbol_table);
+      left = codegen_ast(left, ast->component.operation.left, symbol_table);
+      right = codegen_ast(right, ast->component.operation.right, symbol_table);
 
-          codegen_ast_operations(cg, AST_OP_DIV, left, right, symbol_table);
+      codegen_ast_operations(cg, AST_OP_DIV, left, right, symbol_table);
 
       break;
 
     case AST_OP_MINUS:
       printf("minus\n");
-      left = codegen_ast(ast->component.operation.left, symbol_table);
-      right = NULL;
+      left = codegen_ast(left, ast->component.operation.left, symbol_table);
 
       codegen_ast_operations(cg, AST_OP_MINUS, left, NULL, symbol_table);
       break;
@@ -155,5 +205,7 @@ codegen* codegen_ast(ast* ast, symTable* symbol_table){
     default:
       break;
   }
+  codegen_keepQuadList_free(left);
+  codegen_keepQuadList_free(right);
   return cg;
 }

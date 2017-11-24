@@ -50,7 +50,11 @@ quadList* quadList_init();
  * @param arg_2 Second argument of the new quad's expression
  * @param result Adress of the new quad's expression's result
  **/
-void init_existing_quad(quad* newQuad, enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result);
+quad* init_existing_quad(enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result);
+
+void quadList_print(quadList* ql);
+
+
 /**
  * @brief codegen_init Creates a new codegen pointer & returns it
  **/
@@ -69,18 +73,22 @@ void quad_free(quad* quad);
  **/
 void quadList_free_keepList(quadList* ql);
 
+void quadList_free(quadList* ql);
+
+void codegen_free(codegen* cg);
+
 /**
  * @brief concat Concat two lists of quads together
  * @param q1 First list to be concataned
  * @param q2 Second list, concatened to q1
  **/
-void concat(quadList* q1, quadList* q2);
+quadList* concat(quadList* q1, quadList* q2);
 
 /**
  * @brief quad_add Add a new intialized quad in the last position of the chain list
  *        of quads of the parameter quad's member "next"
  * @param quad Quad in which the newly initialized quad will be added as a chained list member
- * @param op Operator of the 3-adresses expression represented by the new quad
+ * @param type Type of the AST node being transformed to a 3-adresses expression
  * @param arg_1 First argument of the new quad's expression
  * @param arg_2 Second argument of the new quad's expression
  * @param result Adress of the new quad's expression's result
@@ -88,6 +96,14 @@ void concat(quadList* q1, quadList* q2);
 void quad_add(quadList* quad, enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result);
 
 
+/**
+ * @brief codegen_ast_operations Auxiliary function for codegen_ast
+ * @param cg Codegen instance
+ * @param type Type of the AST node being transformed to a 3-adresses expression
+ * @param left Left member of the codegen instance being analyzed
+ * @param right Right member of the codegen instance being analyzed
+ * @param symbol_table
+ **/
 void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, codegen* right, symTable* symbol_table);
 
 
@@ -96,7 +112,7 @@ void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, code
 * @param ast Tree to analyze
 * @param symbol_table
 **/
-codegen* codegen_ast(ast* ast, symTable* symbol_table);
+codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table);
 
 
 #endif

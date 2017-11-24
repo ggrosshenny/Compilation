@@ -27,7 +27,17 @@ int main()
   symTable* symTableTest = symTable_init();
 
   print_ast(astTest, 0);
-  codegen* cg = codegen_ast(astTest, symTableTest);
+  codegen* cgBis = codegen_init();
+  cgBis = codegen_ast(cgBis, astTest, symTableTest);
+  quadList_print(cgBis->code);
+  // Memory liberation
+
+  ast_free(astTest);
+  printf("free ast\n");
+  symTable_free(symTableTest);
+  printf("free symTable\n");
+  codegen_free(cgBis);
+  printf("free codegen\n");
 
   return 0;
 }
