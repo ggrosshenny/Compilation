@@ -9,7 +9,7 @@ TESTQUADTOMIPS = test_quadToMIPS
 
 tests: test_astToSymTable test_symTable test_AST test_quad test_quadToMIPS 
 
-test_quadToMIPS: ast.o symbolTable.o astToST.o quadToMIPS.o test_QuadToMIPS.o
+test_quadToMIPS: ast.o symbolTable.o astToST.o quadToMIPS.o test_QuadToMIPS.o quad.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 test_quad: ast.o symbolTable.o astToST.o quad.o test_quad.o
