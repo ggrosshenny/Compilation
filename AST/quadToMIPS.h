@@ -3,7 +3,7 @@
 
 #include "astToST.h"
 #include <stdio.h>
-//#include "quad.h"
+#include "quad.h"
 
 // Auxiliary functions
 
@@ -26,15 +26,71 @@ FILE* genMIPS_init(char* fileName, symTable* table);
 * @param quads list of quads
 * @param table symbol table
 */
-void genMIPS_genCode(char* fileName, quadList* quads , symTable table);
+void genMIPS_genCode(char* fileName, quadList* quads , symTable* table);
+
+
+// ============================
+// Binary arithmetic operations
 
 
 /**
-* @brief genMIPS_genAdd Generate the MIPS code for addition with the given quad
+* @brief genMIPS_genAdd Generate the MIPS code for the addition with the given quad
 * @param file_MIPS MIPS code file
-* @param quad given quad
+* @param qd given quad
 **/
-void genMIPS_genAdd(FILE* file_MIPS/*, Quad* quad*/);
+void genMIPS_genAdd(FILE* fileMIPS, quad* qd);
+
+
+/**
+* @brief genMIPS_genSub Generate the MIPS code for the substraction with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genSub(FILE* fileMIPS, quad* qd);
+
+
+/**
+* @brief genMIPS_genMult Generate the MIPS code for the multiplication with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genMult(FILE* fileMIPS, quad* qd);
+
+
+/**
+* @brief genMIPS_genDiv Generate the MIPS code for the division with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genDiv(FILE* fileMIPS, quad* qd);
+
+
+// ============================
+// Unary arithmetic operations
+
+
+/**
+* @brief genMIPS_genIncr Generate the MIPS code for the incrementation with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genIncr(FILE* fileMIPS, quad* qd);
+
+
+/**
+* @brief genMIPS_genDecr Generate the MIPS code for the decrementation with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genDecr(FILE* fileMIPS, quad* qd);
+
+
+/**
+* @brief genMIPS_genMinus Generate the MIPS code for the minus with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genMinus(FILE* fileMIPS, quad* qd);
 
 
 #endif

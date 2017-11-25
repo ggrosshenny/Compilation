@@ -27,11 +27,13 @@ int main()
   symTable* symTableTest = symTable_init();
 
   genSymTable_ast(astTest, symTableTest);
+  codegen* cgBis = codegen_init();
+  cgBis = codegen_ast(cgBis, astTest, symTableTest);
 
-  FILE* test = genMIPS_init("test_quadToMIPS.test", symTableTest);
+  genMIPS_genCode("test_quadToMIPS.test", cgBis->code, symTableTest);
 
   // Frees and close here
   symTable_free(symTableTest);
   ast_free(astTest);
-  fclose(test);
+  codegen_free(cgBis);
 }
