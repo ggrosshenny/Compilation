@@ -6,7 +6,7 @@ LDFLAGS=
 all:
 	yacc -d -Wconflicts-sr grammar.y
 	flex lexical_analysis.lex
-	$(CC) y.tab.c lex.yy.c AST/ast.c -ll -ly
+	$(CC) y.tab.c lex.yy.c AST/ast.c AST/symbolTable.c AST/astToST.c AST/quad.c AST/quadToMIPS.c -ll -ly -lfl -o compilateur
 
 test_quad: ast.o symbolTable.o astToST.o quad.o test_quad.o
 		$(CC) -o $@ $^ $(LDFLAGS)

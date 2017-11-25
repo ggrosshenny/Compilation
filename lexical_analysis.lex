@@ -7,7 +7,7 @@
 
 %}
 TYPE      int
-KEYWORDS  if|else|while|for
+KEYWORDS  if|else|while|for|main|printf|printi
 NUMBER    0|([1-9][0-9]*)
 ID        [a-zA-Z_]([a-zA-Z0-9_])*
 OP        \+|-|\+\+|--|\*|\/|\(|\)|\;|=|==|\<|\<=|\>|\>=|!=
@@ -35,6 +35,13 @@ OP        \+|-|\+\+|--|\*|\/|\(|\)|\;|=|==|\<|\<=|\>|\>=|!=
 [\n{}]     { return yytext[0]; }
 
 
-
-
 %%
+/*
+int main(int argc, char** argv){
+
+  yyin = fopen(argv[1], "r");
+  yylex();
+  fclose(yyin);
+  return (0);
+}
+*/
