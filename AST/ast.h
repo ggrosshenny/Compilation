@@ -11,8 +11,8 @@
 
 // Types definition
 enum ast_type{AST_INT, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
-              AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_FUNC_CALL, 
-              AST_FUNC_DEF, AST_ID};
+              AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_OP_DECL,
+              AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_FUNC_BODY, AST_ID};
 
 // Ast definition
 typedef struct s_ast
@@ -31,10 +31,24 @@ typedef struct s_ast
       // Function call and definition
     struct
     {
-      struct s_ast* identifier;
-      struct s_ast* arguments;
-      struct s_ast* body;
+      struct s_ast* identifier; // Have to be AST_ID
+      struct s_ast* arguments;  // Have to be AST_FUNC_ARG
+      struct s_ast* body;       // Have to be AST_FUNC_BODY
     }function;
+      // Arguments for functions
+    struct
+    {
+      struct s_ast* prevArg; // Have to be AST_FUNC_ARG !
+      struct s_ast* arg_AST; // Have to be AST_ID or AST_INT !
+      struct s_ast* nextArg; // Have to be AST_FUNC_ARG !
+    }arguments;
+      // Body of functions
+    struct
+    {
+      struct s_ast* prevInstruction; // Have to be AST_FUNC_BODY !
+      struct s_ast* instruction;     // Can be all kind of AST types
+      struct s_ast* nextInstruction; // Have to be AST_FUNC_BODY !
+    }instructionsList;
       // Number
     int number;
       // Identifier
@@ -51,6 +65,14 @@ typedef struct s_ast
 * @param indent
 */
 void print_ast(ast* tree, int indent);
+
+
+/**
+* @brief ast_concat Concat two ast
+* @param right right ast
+* @param left left ast
+*/
+ast* ast_concat(ast* right, ast* left);
 
 
 // Memory release
@@ -103,6 +125,14 @@ ast* ast_new_functionDefinition(ast* id, ast* arguments, ast* functionBody);
 * @param arguments arguments of the function
 */
 ast* ast_new_functionCall(ast* id, ast* arguments);
+
+
+  // Instructions list
+/**
+* @brief ast_new_Instruction Create a new instruction node in the given ast
+* @param instruction0 instruction to encapsulate
+*/
+ast* ast_new_Instruction(ast* instruction0);
 
 
   // Variables and integers

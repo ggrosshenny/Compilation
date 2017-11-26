@@ -7,6 +7,20 @@ int main()
     ast* astTest = NULL;
 
     // Tests
+
+    // Test declaration
+    ast* testId = ast_new_identifier("Test");
+    assert(testId->type == AST_ID);
+    assert(strcmp(testId->component.identifier, "Test") == 0);
+
+    ast* testVal = ast_new_number(25);
+    assert(testVal->type == AST_INT);
+    assert(testVal->component.number == 25);
+
+    ast* testIdDeclaration = ast_new_binaryOperation(AST_OP_DECL, testId, testVal);
+
+    ast* instr0 = ast_new_Instruction(testIdDeclaration);
+
       // leftOp
     ast* leftOp = ast_new_identifier("Test");
     assert(leftOp->type == AST_ID);
@@ -44,7 +58,12 @@ int main()
     assert(mult2->component.operation.left->type == AST_OP_MINUS);
     assert(mult2->component.operation.right->type == AST_OP_MULT);
 
-    astTest = mult2;
+    ast* instr1 = ast_new_Instruction(mult2);
+
+    ast* id = ast_new_identifier("lol");
+    ast* instr2 = ast_new_Instruction(id);
+    ast* temp = ast_concat(instr0, instr2);
+    astTest = ast_concat(temp, instr1);
 
     print_ast(astTest, 0);
 

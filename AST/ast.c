@@ -47,6 +47,11 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.operation.left, indent);
                           print_ast(tree->component.operation.right, indent);
                           break;
+      case AST_OP_DECL  : indent++;
+                          printf("Declaration\n");
+                          print_ast(tree->component.operation.left, indent);
+                          print_ast(tree->component.operation.right, indent);
+                          break;
       // Unary operations
       case AST_OP_INCR :  indent++;
                           printf("Incrementation\n");
@@ -60,11 +65,53 @@ void print_ast(ast* tree, int indent)
                           printf("Minus\n");
                           print_ast(tree->component.operation.left, indent);
                           break;
+      case AST_FUNC_BODY :  indent++;
+                            printf("Instruction\n");
+                            print_ast(tree->component.instructionsList.instruction, indent);
+                            print_ast(tree->component.instructionsList.nextInstruction, indent);
+                            break;
       default         :   break;
     }
   }
 }
 
+
+ast* ast_concat(ast* mainAST, ast* astToAdd)
+{
+  // Verification
+  if(mainAST->type != astToAdd->type)
+  {
+    printf("Coucou\n");
+    ast_free(mainAST);
+    ast_free(astToAdd);
+    fprintf(stderr, "ERROR : You're trying to concat two AST with different types !\n");
+    exit(1);
+  }
+
+  ast* temp = NULL;
+
+  switch(mainAST->type)
+  {
+    case AST_FUNC_BODY :
+      temp = mainAST;
+      while(temp->component.instructionsList.nextInstruction != NULL)
+      {
+        temp = temp->component.instructionsList.nextInstruction;
+      }
+      temp->component.instructionsList.nextInstruction = astToAdd;
+      astToAdd->component.instructionsList.prevInstruction = temp;
+      break;
+
+    default:
+      ast_free(mainAST);
+      ast_free(astToAdd);
+      fprintf(stderr, "ERROR : You're trying to concat two AST with invalid types !\n");
+      exit(1);
+      break;
+  }
+
+  return mainAST;
+}
 
 
 // ========================
@@ -103,7 +150,11 @@ void ast_free(ast* tree)
                         free(tree);
                         break;
     case AST_OP_AFCT  : ast_free(tree->component.operation.left);
-                        ast_free(tree->component.operation.left);
+                        ast_free(tree->component.operation.right);
+                        free(tree);
+                        break;
+    case AST_OP_DECL  : ast_free(tree->component.operation.left);
+                        ast_free(tree->component.operation.right);
                         free(tree);
                         break;
     // Unary operations
@@ -124,6 +175,10 @@ void ast_free(ast* tree)
                         break;
     case AST_FUNC_CALL: ast_free(tree->component.function.arguments);
                         free(tree->component.function.identifier);
+                        free(tree);
+                        break;
+    case AST_FUNC_BODY: ast_free(tree->component.instructionsList.instruction);
+                        ast_free(tree->component.instructionsList.nextInstruction);
                         free(tree);
                         break;
 
@@ -177,6 +232,17 @@ ast* ast_new_functionCall(ast* id, ast* arguments)
   newAst->component.function.identifier = id;
   newAst->component.function.arguments = arguments;
   newAst->component.function.body = NULL;
+  return newAst;
+}
+
+
+ast* ast_new_Instruction(ast* instruction0)
+{
+  ast* newAst = calloc(1, sizeof(ast));
+  newAst->type = AST_FUNC_BODY;
+  newAst->component.instructionsList.prevInstruction = NULL;
+  newAst->component.instructionsList.instruction = instruction0;
+  newAst->component.instructionsList.nextInstruction = NULL;
   return newAst;
 }
 
