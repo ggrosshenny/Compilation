@@ -7,7 +7,7 @@
 int main()
 {
 
-  symTable* test = symTable_init();
+  symTable* test = symTable_init(NULL);
 
   symbol* testSymbol = NULL;
 

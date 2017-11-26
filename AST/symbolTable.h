@@ -2,6 +2,7 @@
 #define __SYMBOLETABLE_H_
 
 #include <stdbool.h>
+#include "ast.h"
 
 #define ST_MAX_IDENTIFIER_LENGTH 42
 #define ST_MAX_TEMPIDENTIFIER_LENGTH 48
@@ -34,6 +35,8 @@ typedef struct s_symTable
   int nb_temp;
   // Number of variable in the stack (used for translation from quad to MIPS)
   int nb_VarInStack;
+  // Pointer to ast tree for error handling
+  ast* tree;
 } symTable;
 
 
@@ -69,7 +72,7 @@ void symTable_print(symTable* table);
 /**
 * @brief symTable_init initialize a new symbol table
 */
-symTable* symTable_init();
+symTable* symTable_init(ast* tree0);
 
 
 /**

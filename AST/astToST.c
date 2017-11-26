@@ -2,44 +2,127 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+// Auxiliary functions
+
+void genSymTable_error(char* message, ast* tree, symTable* st)
+{
+  ast_free(tree);
+  symTable_free(st);
+  fprintf(stderr, "%s\n", message);
+  exit(1);
+}
+
+
+
+// Main functions
+
 ast* genSymTable_ast(ast* tree, symTable* st)
 {
-  switch(tree->type)
+  if(tree != NULL)
   {
-    // leafs
-    case AST_INT     :  break;
-    case AST_ID      :  genSymTable_const(tree, st);
-                        break;
-    // Binary operations
-    case AST_OP_ADD  :  genSymTable_ast(tree->component.operation.left, st);
-                        genSymTable_ast(tree->component.operation.right, st);
-                        break;
-    case AST_OP_SUB  :  genSymTable_ast(tree->component.operation.left, st);
-                        genSymTable_ast(tree->component.operation.right, st);
-                        break;
-    case AST_OP_MULT :  genSymTable_ast(tree->component.operation.left, st);
-                        genSymTable_ast(tree->component.operation.right, st);
-                        break;
-    case AST_OP_DIV :   genSymTable_ast(tree->component.operation.left, st);
-                        genSymTable_ast(tree->component.operation.right, st);
-                        break;
-    // Unary operations
-    case AST_OP_INCR :  genSymTable_ast(tree->component.operation.left, st);
-                        break;
-    case AST_OP_DECR :  genSymTable_ast(tree->component.operation.left, st);
-                        break;
-    case AST_OP_MINUS : genSymTable_ast(tree->component.operation.left, st);
-                        break;
-    // Function
-    case AST_FUNC_DEF : genSymTable_ast(tree->component.operation.left, st);
-                        genSymTable_ast(tree->component.operation.right, st);
-                        break;
-    case AST_FUNC_CALL: genSymTable_ast(tree->component.operation.left, st);
-                        genSymTable_ast(tree->component.operation.right, st);
-                        break;
+    switch(tree->type)
+    {
+      // leafs
+      case AST_INT     :  break;
+      case AST_ID      :  genSymTable_const(tree, st);
+                          break;
+      // Binary operations
+      case AST_OP_ADD  :  printf("add\n");
+                          genSymTable_binaryOperation(tree, st);
+                          break;
+      case AST_OP_SUB  :  genSymTable_binaryOperation(tree, st);
+                          break;
+      case AST_OP_MULT :  printf("Mult\n");
+                          genSymTable_binaryOperation(tree, st);
+                          break;
+      case AST_OP_DIV :   genSymTable_binaryOperation(tree, st);
+                          break;
+      case AST_OP_DECL :  genSymTable_declaration(tree, st);
+                          break;
+      // Unary operations
+      case AST_OP_INCR :  genSymTable_unaryOperation(tree, st);
+                          break;
+      case AST_OP_DECR :  genSymTable_unaryOperation(tree, st);
+                          break;
+      case AST_OP_MINUS : genSymTable_unaryOperation(tree, st);
+                          break;
+      // Function
+      case AST_FUNC_DEF : // genSymTable_ast(tree->component.operation.left, st);
+                          // genSymTable_ast(tree->component.operation.right, st);
+                          break;
+      case AST_FUNC_CALL: // genSymTable_ast(tree->component.operation.left, st);
+                          // genSymTable_ast(tree->component.operation.right, st);
+                          break;
+      case AST_FUNC_BODY: genSymTable_ast(tree->component.instructionsList.instruction, st);
+                          genSymTable_ast(tree->component.instructionsList.nextInstruction, st);
+                          break;
 
-    default         :   break;
+
+      default         :   break;
+    }
   }
+  return tree;
+}
+
+
+ast* genSymTable_binaryOperation(ast* tree, symTable* st)
+{
+  ast* left = tree->component.operation.left;
+  ast* right = tree->component.operation.right;
+  if(left->type == AST_ID)
+  {
+    if(symTable_lookUp(st, left->component.identifier) == NULL)
+    {
+      char msg[MAX_IDENTIFIER_LENGHT+250];
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : Identifier %s was not declared before use !\n", left->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+  }
+  if(right->type == AST_ID)
+  {
+    if(symTable_lookUp(st, right->component.identifier) == NULL)
+    {
+      char msg[MAX_IDENTIFIER_LENGHT+250];
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : Identifier %s was not declared before use !\n", right->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+  }
+  genSymTable_ast(left, st);
+  genSymTable_ast(right, st);
+
+  return tree;
+}
+
+
+ast* genSymTable_unaryOperation(ast* tree, symTable* st)
+{
+  ast* left = tree->component.operation.left;
+
+  if(left->type)
+  {
+    if(symTable_lookUp(st, left->component.identifier) == NULL)
+    {
+      char msg[MAX_IDENTIFIER_LENGHT+250];
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : Identifier %s was not declared before use !\n", left->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+  }
+
+  genSymTable_ast(left, st);
+
+  return tree;
+}
+
+
+ast* genSymTable_declaration(ast* tree, symTable* st)
+{
+  ast* left = tree->component.operation.left;
+  ast* right = tree->component.operation.right;
+
+  left = genSymTable_ast(left, st);
+  right = genSymTable_ast(right, st);
+
   return tree;
 }
 
@@ -51,5 +134,6 @@ symbol* genSymTable_newTemp(ast* tree, symTable* st)
 
 symbol* genSymTable_const(ast* tree, symTable* st)
 {
+  printf("Coucou\n");
   return symTable_addConst(st, tree->component.identifier);
 }

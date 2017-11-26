@@ -56,7 +56,7 @@ void symTable_print(symTable* table)
 // Main functions
 
 
-symTable* symTable_init()
+symTable* symTable_init(ast* tree0)
 {
   symTable* newTable = calloc(1, sizeof(symTable));
   for(int i=0; i<ST_HASHTABLE_SIZE; i++)
@@ -65,6 +65,7 @@ symTable* symTable_init()
   }
   newTable->nb_temp = 0;
   newTable->nb_VarInStack = 0;
+  newTable->tree = tree0;
   return newTable;
 }
 
