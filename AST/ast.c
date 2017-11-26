@@ -65,6 +65,18 @@ void print_ast(ast* tree, int indent)
                           printf("Minus\n");
                           print_ast(tree->component.operation.left, indent);
                           break;
+      // Functions
+      case AST_FUNC_DEF  :  indent++;
+                            printf("Function definition\n");
+                            print_ast(tree->component.function.identifier, indent);
+                            print_ast(tree->component.function.arguments, indent);
+                            print_ast(tree->component.function.body, indent);
+                            break;
+      case AST_FUNC_CALL :  indent++;
+                            printf("Function call\n");
+                            print_ast(tree->component.function.identifier, indent);
+                            print_ast(tree->component.function.arguments, indent);
+                            break;
       case AST_FUNC_BODY :  indent++;
                             printf("Instruction\n");
                             print_ast(tree->component.instructionsList.instruction, indent);
@@ -170,11 +182,11 @@ void ast_free(ast* tree)
     // Function
     case AST_FUNC_DEF : ast_free(tree->component.function.arguments);
                         ast_free(tree->component.function.body);
-                        free(tree->component.function.identifier);
+                        ast_free(tree->component.function.identifier);
                         free(tree);
                         break;
     case AST_FUNC_CALL: ast_free(tree->component.function.arguments);
-                        free(tree->component.function.identifier);
+                        ast_free(tree->component.function.identifier);
                         free(tree);
                         break;
     case AST_FUNC_BODY: ast_free(tree->component.instructionsList.instruction);

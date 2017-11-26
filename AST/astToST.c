@@ -25,7 +25,8 @@ ast* genSymTable_ast(ast* tree, symTable* st)
     {
       // leafs
       case AST_INT     :  break;
-      case AST_ID      :  genSymTable_const(tree, st);
+      case AST_ID      :  printf("Couou\n");
+                          genSymTable_const(tree, st);
                           break;
       // Binary operations
       case AST_OP_ADD  :  printf("add\n");
@@ -48,8 +49,7 @@ ast* genSymTable_ast(ast* tree, symTable* st)
       case AST_OP_MINUS : genSymTable_unaryOperation(tree, st);
                           break;
       // Function
-      case AST_FUNC_DEF : // genSymTable_ast(tree->component.operation.left, st);
-                          // genSymTable_ast(tree->component.operation.right, st);
+      case AST_FUNC_DEF : genSymTable_functionDeclaration(tree, st);
                           break;
       case AST_FUNC_CALL: // genSymTable_ast(tree->component.operation.left, st);
                           // genSymTable_ast(tree->component.operation.right, st);
@@ -122,6 +122,36 @@ ast* genSymTable_declaration(ast* tree, symTable* st)
 
   left = genSymTable_ast(left, st);
   right = genSymTable_ast(right, st);
+
+  return tree;
+}
+
+
+ast* genSymTable_functionDeclaration(ast* tree, symTable* st)
+{
+  print_ast(tree->component.function.identifier, 0);
+  genSymTable_ast(tree->component.function.identifier, st);
+  genSymTable_ast(tree->component.function.arguments, st);
+  genSymTable_ast(tree->component.function.body, st);
+
+  return tree;
+}
+
+
+ast* genSymTable_functionCall(ast* tree, symTable* st)
+{
+  ast* identifier = tree->component.function.identifier;
+
+  if(symTable_lookUp(st, identifier->component.identifier) == NULL)
+  {
+    char msg[MAX_IDENTIFIER_LENGHT+250];
+    snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : Identifier %s was not declared before use !\n", identifier->component.identifier);
+    genSymTable_error(msg, st->tree, st);
+  }
+
+  genSymTable_ast(identifier, st);
+  genSymTable_ast(tree->component.function.arguments, st);
+  genSymTable_ast(tree->component.function.body, st);
 
   return tree;
 }

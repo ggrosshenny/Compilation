@@ -32,6 +32,10 @@ void symbol_printList(symbol* symbolList)
       {
         printf("\t%s\tNONE\n", temp->identifier);
       }
+      else if(temp->isFunction)
+      {
+        printf("\t%s\tfunc\n", temp->identifier);
+      }
       else
       {
         printf("\t%s\t%d\n", temp->identifier, temp->value);
@@ -66,6 +70,10 @@ symTable* symTable_init(ast* tree0)
   newTable->nb_temp = 0;
   newTable->nb_VarInStack = 0;
   newTable->tree = tree0;
+
+  symTable_addFunc(newTable, "print");
+  symTable_addFunc(newTable, "printi");
+
   return newTable;
 }
 
@@ -155,6 +163,7 @@ symbol* symTable_newTemp(symTable* table, int value)
   symbol* newTemp = calloc(1, sizeof(symbol));
   newTemp->identifier = tempName;
   newTemp->isConstant = false;
+  newTemp->isFunction = false;
   newTemp->value = value;
   symTable* test = symTable_add(table, newTemp);
   // Should never happen
@@ -169,11 +178,12 @@ symbol* symTable_newTemp(symTable* table, int value)
 
 symbol* symTable_addConst(symTable* table, char* constName)
 {
-  // Create the new temp variable
+  // Create the new constant
   symTable* temp = NULL;
   symbol* newConst = calloc(1, sizeof(symbol));
   newConst->identifier = strndup(constName, ST_MAX_IDENTIFIER_LENGTH);
   newConst->isConstant = true;
+  newConst->isFunction = false;
   newConst->value = 0;
   temp = symTable_add(table, newConst);
   if(temp == NULL)
@@ -181,4 +191,21 @@ symbol* symTable_addConst(symTable* table, char* constName)
       return NULL;
   }
   return newConst;
+}
+
+
+symbol* symTable_addFunc(symTable* table, char* funcName)
+{
+  // Create the new constant
+  symTable* temp = NULL;
+  symbol* newFunc = calloc(1, sizeof(symbol));
+  newFunc->identifier = strndup(funcName, ST_MAX_IDENTIFIER_LENGTH);
+  newFunc->isConstant = false;
+  newFunc->isFunction = true;
+  temp = symTable_add(table, newFunc);
+  if(temp == NULL)
+  {
+      return NULL;
+  }
+  return newFunc;
 }

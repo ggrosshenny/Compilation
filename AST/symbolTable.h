@@ -17,8 +17,10 @@ typedef struct s_symbol
 {
   // Identifier of the symbol
   char* identifier;
-  // Bool to identifiate if the symbol is a constant or a temporary variable
+  // Bool to know if the symbol is a constant or a temporary variable
   bool isConstant;
+  // Bool to know if the symbol is a function
+  bool isFunction;
   // Value of the temporary
   int value;
   // Position of the symbol in stack (used for translation from quad to MIPS)
@@ -108,12 +110,19 @@ symbol* symTable_newTemp(symTable* table, int value);
 
 
 /**
- * @brief symTable_newTemp create a new constante in the table
+ * @brief symTable_addConst create a new constante in the table
  * @param table symbol table
  * @param tempName name of the constante
- * @param value value of constante
  **/
 symbol* symTable_addConst(symTable* table, char* constName);
+
+
+/**
+ * @brief symTable_addFunc create a new function in the table
+ * @param table symbol table
+ * @param funcName name of the function
+ **/
+symbol* symTable_addFunc(symTable* table, char* funcName);
 
 
 /**

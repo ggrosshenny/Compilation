@@ -41,7 +41,8 @@ int main()
 
   ast* instr1 = ast_new_Instruction(mult2);
 
-  astTest = ast_concat(instr0, instr1);
+  ast* funcID = ast_new_identifier("main");
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(instr0, instr1));
 
   symTable* symTableTest = symTable_init(astTest);
 

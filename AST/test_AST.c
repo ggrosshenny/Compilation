@@ -63,7 +63,8 @@ int main()
     ast* id = ast_new_identifier("lol");
     ast* instr2 = ast_new_Instruction(id);
     ast* temp = ast_concat(instr0, instr2);
-    astTest = ast_concat(temp, instr1);
+    ast* funcID = ast_new_identifier("main");
+    astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp, instr1));
 
     print_ast(astTest, 0);
 

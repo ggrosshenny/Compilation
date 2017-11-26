@@ -45,11 +45,28 @@ ast* genSymTable_unaryOperation(ast* tree, symTable* st);
 
 
 /**
- * @brief genSymTable_declaration generate the symbol table from the given AST for an affectation
+ * @brief genSymTable_declaration generate the symbol table from the given AST for a variable declaration
  * @param tree AST
  * @param st symbol table
  **/
 ast* genSymTable_declaration(ast* tree, symTable* st);
+
+
+/**
+ * @brief genSymTable_functionDeclaration generate the symbol table from the given AST for an function declaration
+ * @param tree AST
+ * @param st symbol table
+ **/
+ast* genSymTable_functionDeclaration(ast* tree, symTable* st);
+
+
+
+/**
+ * @brief genSymTable_functionCall generate the symbol table from the given AST for an function call
+ * @param tree AST
+ * @param st symbol table
+ **/
+ast* genSymTable_functionCall(ast* tree, symTable* st);
 
 
 /**
