@@ -241,11 +241,11 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         codegen_ast_operations(cg, AST_OP_AFCT, left, right, symbol_table);
         break;
 
-      case AST_OP_DCLR:
+      case AST_OP_DECL:
 
         left = codegen_ast(left, ast->component.operation.left, symbol_table);
 
-        codegen_ast_operations(cg, AST_OP_DCLR, left, NULL, symbol_table);
+        codegen_ast_operations(cg, AST_OP_DECL, left, NULL, symbol_table);
         break;
 
       // Functions
