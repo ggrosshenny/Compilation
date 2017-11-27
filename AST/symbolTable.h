@@ -10,22 +10,35 @@
 
 // Dans la TDS : Number, Variable
 
+// types of values
+enum value_type{INT, STRING};
+
 // ==========
 // Structures
 
+typedef union u_value
+{
+  int integer;
+  char* string;
+}value;
+
 typedef struct s_symbol
 {
-  // Identifier of the symbol
+    // Identifier of the symbol
   char* identifier;
-  // Bool to know if the symbol is a constant or a temporary variable
+    // Bool to know if the symbol is a constant or a temporary variable
   bool isConstant;
-  // Bool to know if the symbol is a function
+    // Bool to know if the symbol is a function
   bool isFunction;
-  // Value of the temporary
-  int value;
-  // Position of the symbol in stack (used for translation from quad to MIPS)
+    // Content of the temporary
+  struct
+  {
+    enum value_type type;
+    value val;
+  }content;
+    // Position of the symbol in stack (used for translation from quad to MIPS)
   int stackPosition;
-  // Next symbol in the list
+    // Next symbol in the list
   struct s_symbol* next;
 } symbol;
 
@@ -33,10 +46,8 @@ typedef struct s_symTable
 {
   // Hash table
   symbol* table[ST_HASHTABLE_SIZE];
-  // Number of temporary variables in the table
+  // temp counter
   int nb_temp;
-  // Number of variable in the stack (used for translation from quad to MIPS)
-  int nb_VarInStack;
   // Pointer to ast tree for error handling
   ast* tree;
 } symTable;
@@ -106,7 +117,7 @@ symTable* symTable_add(symTable* table, symbol* symbol0);
  * @param tempName name of the temporary variable
  * @param value value of the temporary variable
  **/
-symbol* symTable_newTemp(symTable* table, int value);
+symbol* symTable_newTemp(symTable* table, enum value_type val_type, value val0);
 
 
 /**

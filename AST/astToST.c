@@ -159,7 +159,9 @@ ast* genSymTable_functionCall(ast* tree, symTable* st)
 
 symbol* genSymTable_newTemp(ast* tree, symTable* st)
 {
-  return symTable_newTemp(st, tree->component.number);
+  value newVal;
+  newVal.integer = tree->component.number;
+  return symTable_newTemp(st, INT, newVal);
 }
 
 symbol* genSymTable_const(ast* tree, symTable* st)

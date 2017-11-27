@@ -38,7 +38,15 @@ void symbol_printList(symbol* symbolList)
       }
       else
       {
-        printf("\t%s\t%d\n", temp->identifier, temp->value);
+        if(temp->content.type == INT)
+        {
+          printf("\t%s\t%d\n", temp->identifier, temp->content.val.integer);
+        }
+        if(temp->content.type == STRING)
+        {
+          printf("\t%s\t%s\n", temp->identifier, temp->content.val.string);
+        }
+
       }
       temp = temp->next;
   }
@@ -68,7 +76,6 @@ symTable* symTable_init(ast* tree0)
     newTable->table[i] = NULL;
   }
   newTable->nb_temp = 0;
-  newTable->nb_VarInStack = 0;
   newTable->tree = tree0;
 
   symTable_addFunc(newTable, "print");
@@ -151,7 +158,7 @@ symTable* symTable_add(symTable* table, symbol* symbol0)
 }
 
 
-symbol* symTable_newTemp(symTable* table, int value)
+symbol* symTable_newTemp(symTable* table, enum value_type val_type, value val0)
 {
   char* tempName = calloc(ST_MAX_TEMPIDENTIFIER_LENGTH+1, sizeof(char));
   // Create the temp name
@@ -164,7 +171,8 @@ symbol* symTable_newTemp(symTable* table, int value)
   newTemp->identifier = tempName;
   newTemp->isConstant = false;
   newTemp->isFunction = false;
-  newTemp->value = value;
+  newTemp->content.type = val_type;
+  newTemp->content.val = val0;
   symTable* test = symTable_add(table, newTemp);
   // Should never happen
   if(test == NULL)
@@ -184,7 +192,6 @@ symbol* symTable_addConst(symTable* table, char* constName)
   newConst->identifier = strndup(constName, ST_MAX_IDENTIFIER_LENGTH);
   newConst->isConstant = true;
   newConst->isFunction = false;
-  newConst->value = 0;
   temp = symTable_add(table, newConst);
   if(temp == NULL)
   {

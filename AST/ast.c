@@ -90,7 +90,7 @@ void print_ast(ast* tree, int indent)
 
 ast* ast_concat(ast* mainAST, ast* astToAdd)
 {
-  if(astToadd == NULL)
+  if(astToAdd == NULL)
   {
     return mainAST;
   }

@@ -11,24 +11,41 @@ int main()
 
   symbol* testSymbol = NULL;
 
-  testSymbol = symTable_newTemp(test, 42);
+  value v42;
+  v42.integer = 42;
+  testSymbol = symTable_newTemp(test, INT, v42);
   assert(strcmp(testSymbol->identifier, "$temp_0")==0);
   assert(testSymbol->isConstant == false);
-  assert(testSymbol->value == 42);
+  assert(testSymbol->content.type == INT);
+  assert(testSymbol->content.val.integer == 42);
 
   testSymbol = symTable_addConst(test, "lol");
   assert(strcmp(testSymbol->identifier, "lol")==0);
   assert(testSymbol->isConstant == true);
 
-  testSymbol = symTable_newTemp(test, 50);
+  value v50;
+  v50.integer = 50;
+  testSymbol = symTable_newTemp(test, INT, v50);
   assert(strcmp(testSymbol->identifier, "$temp_1")==0);
   assert(testSymbol->isConstant == false);
-  assert(testSymbol->value == 50);
+  assert(testSymbol->content.type == INT);
+  assert(testSymbol->content.val.integer == 50);
 
-  testSymbol = symTable_newTemp(test, 67);
+  value v60;
+  v60.integer = 60;
+  testSymbol = symTable_newTemp(test, INT, v60);
   assert(strcmp(testSymbol->identifier, "$temp_2")==0);
   assert(testSymbol->isConstant == false);
-  assert(testSymbol->value == 67);
+  assert(testSymbol->content.type == INT);
+  assert(testSymbol->content.val.integer == 60);
+
+  value vStr;
+  vStr.string = "LOLOLOLO";
+  testSymbol = symTable_newTemp(test, STRING, vStr);
+  assert(strcmp(testSymbol->identifier, "$temp_3")==0);
+  assert(testSymbol->isConstant == false);
+  assert(testSymbol->content.type == STRING);
+  assert(strcmp(testSymbol->content.val.string, "LOLOLOLO") == 0);
 
   testSymbol = symTable_addConst(test, "const");
   assert(strcmp(testSymbol->identifier, "const")==0);
