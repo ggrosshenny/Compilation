@@ -15,14 +15,15 @@ typedef struct s_quad {
   symbol* arg1; // First argument
   symbol* arg2; // Second argument
   symbol* res;  // Result
+  int index;    // Index of the quad
   struct s_quad* next; // Next quad in the NULL-terminated linked list
 } quad;
 
 // Quads list definition
 typedef struct s_quadList{
   quad* list;
-  int nextQuad;
   quad* last;
+  int indexNextQuad;
 } quadList;
 
 // Code generation structure definition
@@ -50,7 +51,7 @@ quadList* quadList_init();
  * @param arg_2 Second argument of the new quad's expression
  * @param result Adress of the new quad's expression's result
  **/
-quad* init_existing_quad(enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result);
+quad* init_existing_quad(enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result, int quadIndex);
 
 void quadList_print(quadList* ql);
 

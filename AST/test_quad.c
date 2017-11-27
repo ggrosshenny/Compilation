@@ -4,6 +4,13 @@
 int main()
 {
   // Creation de l'AST pour les tests
+
+  // Test declaration
+  ast* testId = ast_new_identifier("Test");
+  ast* testVal = ast_new_number(25);
+  ast* testIdDeclaration = ast_new_binaryOperation(AST_OP_DECL, testId, testVal);
+  ast* instr0 = ast_new_Instruction(testIdDeclaration);
+
   // -2 * (10 * (test + 42))
   ast* astTest = NULL;
     // leftOp
@@ -22,9 +29,14 @@ int main()
   ast* mult = ast_new_binaryOperation(AST_OP_MULT, scal, add);
     // mult2
   ast* mult2 = ast_new_binaryOperation(AST_OP_MULT, minus, mult);
-  astTest = mult2;
 
-  symTable* symTableTest = symTable_init();
+  ast* instr1 = ast_new_Instruction(mult2);
+
+  ast* funcID = ast_new_identifier("main");
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(instr0, instr1));
+
+  symTable* symTableTest = symTable_init(astTest);
+  genSymTable_ast(astTest, symTableTest);
 
   print_ast(astTest, 0);
   codegen* cgBis = codegen_init();

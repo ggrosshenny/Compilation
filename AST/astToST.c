@@ -25,17 +25,14 @@ ast* genSymTable_ast(ast* tree, symTable* st)
     {
       // leafs
       case AST_INT     :  break;
-      case AST_ID      :  printf("Couou\n");
-                          genSymTable_const(tree, st);
+      case AST_ID      :  genSymTable_const(tree, st);
                           break;
       // Binary operations
-      case AST_OP_ADD  :  printf("add\n");
-                          genSymTable_binaryOperation(tree, st);
+      case AST_OP_ADD  :  genSymTable_binaryOperation(tree, st);
                           break;
       case AST_OP_SUB  :  genSymTable_binaryOperation(tree, st);
                           break;
-      case AST_OP_MULT :  printf("Mult\n");
-                          genSymTable_binaryOperation(tree, st);
+      case AST_OP_MULT :  genSymTable_binaryOperation(tree, st);
                           break;
       case AST_OP_DIV :   genSymTable_binaryOperation(tree, st);
                           break;
@@ -166,6 +163,5 @@ symbol* genSymTable_newTemp(ast* tree, symTable* st)
 
 symbol* genSymTable_const(ast* tree, symTable* st)
 {
-  printf("Coucou\n");
   return symTable_addConst(st, tree->component.identifier);
 }

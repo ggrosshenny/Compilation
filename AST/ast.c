@@ -80,7 +80,7 @@ void print_ast(ast* tree, int indent)
       case AST_FUNC_BODY :  indent++;
                             printf("Instruction\n");
                             print_ast(tree->component.instructionsList.instruction, indent);
-                            print_ast(tree->component.instructionsList.nextInstruction, indent);
+                            print_ast(tree->component.instructionsList.nextInstruction, --indent);
                             break;
       default         :   break;
     }
