@@ -35,22 +35,22 @@ quad* init_existing_quad(enum ast_type type_ast, symbol* arg_1, symbol* arg_2, s
 
 void quadList_print(quadList* ql){
   quad* temp = ql->list;
-  printf("QUADLIST'S TYPES: ");
+  printf("QUADLIST'S TYPES:\n");
   while(temp != NULL){
     switch(temp->type)
     {
-      case AST_INT     :  printf("AST_INT "); break;
-      case AST_ID      :  printf("AST_ID "); break;
-      case AST_OP_ADD  :  printf("AST_OP_ADD "); break;
-      case AST_OP_SUB  :  printf("AST_OP_SUB "); break;
-      case AST_OP_MULT :  printf("AST_OP_MULT "); break;
-      case AST_OP_DIV  :  printf("AST_OP_DIV "); break;
-      case AST_OP_AFCT  : printf("AST_OP_AFCT "); break;
-      case AST_OP_INCR  : printf("AST_OP_INCR "); break;
-      case AST_OP_DECR  : printf("AST_OP_DECR "); break;
-      case AST_OP_MINUS : printf("AST_OP_MINUS "); break;
-      case AST_FUNC_DEF : printf("AST_FUNC_DEF "); break;
-      case AST_FUNC_CALL: printf("AST_FUNC_CALL "); break;
+      case AST_INT     :  printf("\tAST_INT, index : %d\n", temp->index); break;
+      case AST_ID      :  printf("\tAST_ID, index : %d\n", temp->index); break;
+      case AST_OP_ADD  :  printf("\tAST_OP_ADD, index : %d\n", temp->index); break;
+      case AST_OP_SUB  :  printf("\tAST_OP_SUB, index : %d\n", temp->index); break;
+      case AST_OP_MULT :  printf("\tAST_OP_MULT, index : %d\n", temp->index); break;
+      case AST_OP_DIV  :  printf("\tAST_OP_DIV, index : %d\n", temp->index); break;
+      case AST_OP_AFCT  : printf("\tAST_OP_AFCT, index : %d\n", temp->index); break;
+      case AST_OP_INCR  : printf("\tAST_OP_INCR, index : %d\n", temp->index); break;
+      case AST_OP_DECR  : printf("\tAST_OP_DECR, index : %d\n", temp->index); break;
+      case AST_OP_MINUS : printf("\tAST_OP_MINUS, index : %d\n", temp->index); break;
+      case AST_FUNC_DEF : printf("\tAST_FUNC_DEF, index : %d\n", temp->index); break;
+      case AST_FUNC_CALL: printf("\tAST_FUNC_CALL, index : %d\n", temp->index); break;
       default         :   break;
     }
     temp = temp->next;
@@ -131,14 +131,12 @@ quadList* concat(quadList* q1, quadList* q2){
       temp->index = newQl->indexNextQuad;
       temp = temp->next;
     }
-    printf("Free q2\n");
     free(q2);
   }
   else{
     if(newQl->list == NULL){
 
       newQl = q2;
-      printf("Free q1\n");
       free(q1);
     }
   }
@@ -255,6 +253,8 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         break;
 
       default:
+        quadList_free(left->code);
+        quadList_free(right->code);
         break;
     }
   }
