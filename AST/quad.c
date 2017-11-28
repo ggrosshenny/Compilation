@@ -1,4 +1,3 @@
-
 #include "quad.h"
 
 quad* quad_init(){
@@ -46,11 +45,13 @@ void quadList_print(quadList* ql){
       case AST_OP_MULT :  printf("\tAST_OP_MULT, index : %d\n", temp->index); break;
       case AST_OP_DIV  :  printf("\tAST_OP_DIV, index : %d\n", temp->index); break;
       case AST_OP_AFCT  : printf("\tAST_OP_AFCT, index : %d\n", temp->index); break;
+      case AST_OP_DECL  : printf("\tAST_OP_DECL, index : %d\n", temp->index); break;
       case AST_OP_INCR  : printf("\tAST_OP_INCR, index : %d\n", temp->index); break;
       case AST_OP_DECR  : printf("\tAST_OP_DECR, index : %d\n", temp->index); break;
       case AST_OP_MINUS : printf("\tAST_OP_MINUS, index : %d\n", temp->index); break;
       case AST_FUNC_DEF : printf("\tAST_FUNC_DEF, index : %d\n", temp->index); break;
       case AST_FUNC_CALL: printf("\tAST_FUNC_CALL, index : %d\n", temp->index); break;
+      case AST_FUNC_BODY: printf("\tAST_FUNC_BODY, index : %d\n", temp->index); break;
       default         :   break;
     }
     temp = temp->next;
@@ -168,6 +169,24 @@ void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, code
 
 }
 
+
+void codegen_ast_functionBody(codegen* cg, codegen* instruction, codegen* nextInstruction, ast* ast, symTable* symbol_table)
+{
+  instruction = codegen_ast(instruction, ast->component.instructionsList.instruction, symbol_table);
+  if(ast->component.instructionsList.nextInstruction != NULL)
+  {
+    nextInstruction = codegen_ast(nextInstruction, ast->component.instructionsList.nextInstruction, symbol_table);
+    instruction->code = concat(instruction->code, nextInstruction->code);
+  }
+  else
+  {
+    quadList_free_keepList(nextInstruction->code);
+  }
+  // Just concat the codes of the instructions
+  cg->code = concat(cg->code, instruction->code);
+}
+
+
 codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
   codegen* left = codegen_init();
@@ -244,6 +263,7 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
       case AST_OP_DECL:
 
         left = codegen_ast(left, ast->component.operation.left, symbol_table);
+        quadList_free_keepList(right->code);
 
         codegen_ast_operations(cg, AST_OP_DECL, left, NULL, symbol_table);
         break;
@@ -252,27 +272,29 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
       case AST_FUNC_DEF:
         // Need to create function "genCode_createFunc" for ID and Arguments section in function AST
-        left = codegen_ast(left, ast->component.function.body, symbol_table);
-        quadList_free_keepList(right->code);
-        cg->code = concat(cg->code, left->code);
+        left = codegen_ast(left, ast->component.function.identifier, symbol_table);
+        right = codegen_ast(right, ast->component.function.body, symbol_table);
+
+        codegen_ast_operations(cg, AST_FUNC_DEF, left, NULL, symbol_table);
+        cg->code = concat(cg->code, right->code);
         break;
 
       case AST_FUNC_BODY:
-        left = codegen_ast(left, ast->component.instructionsList.instruction, symbol_table);
-        right = codegen_ast(right, ast->component.instructionsList.nextInstruction, symbol_table);
-        // Just concat the codes of the instructions
-        if(right != NULL)
-        {
-          left->code = concat(left->code, right->code);
-        }
-        cg->code = concat(cg->code, left->code);
+        codegen_ast_functionBody(cg, left, right, ast, symbol_table);
         break;
 
       default:
         quadList_free(left->code);
         quadList_free(right->code);
+        quadList_free(cg->code);
         break;
     }
+  }
+
+  if(ast==NULL)
+  {
+    quadList_free_keepList(left->code);
+    quadList_free_keepList(right->code);
   }
 
   codegen_keepQuadList_free(left);

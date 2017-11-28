@@ -74,8 +74,16 @@ void quad_free(quad* quad);
  **/
 void quadList_free_keepList(quadList* ql);
 
+/**
+ * @brief quadList_free Free the entier quads list
+ * @param ql quadList object to be freed
+ **/
 void quadList_free(quadList* ql);
 
+/**
+ * @brief codegen_free Free the codegen object
+ * @param cg codegen object to be freed
+ **/
 void codegen_free(codegen* cg);
 
 /**
@@ -106,6 +114,17 @@ void quad_add(quadList* quad, enum ast_type type_ast, symbol* arg_1, symbol* arg
  * @param symbol_table
  **/
 void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, codegen* right, symTable* symbol_table);
+
+
+/**
+ * @brief codegen_ast_functionBody Auxiliary function for codegen_ast that generate the quads for the function body
+ * @param cg Codegen instance
+ * @param instruction current instruction to convert to quad
+ * @param nextInstruction next instruction to convert to quad
+ * @param ast AST 
+ * @param symbol_table
+ **/
+void codegen_ast_functionBody(codegen* cg, codegen* instruction, codegen* nextInstruction, ast* ast, symTable* symbol_table);
 
 
 /**
