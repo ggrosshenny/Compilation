@@ -29,6 +29,18 @@ FILE* genMIPS_init(char* fileName, symTable* table);
 void genMIPS_genCode(char* fileName, quadList* quads , symTable* table);
 
 
+// =================
+// Common operations
+
+
+/**
+* @brief genMIPS_genAffectation Generate the MIPS code for the affectation with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genAffectation(FILE* fileMIPS, quad* qd);
+
+
 // ============================
 // Binary arithmetic operations
 
@@ -92,5 +104,16 @@ void genMIPS_genDecr(FILE* fileMIPS, quad* qd);
 **/
 void genMIPS_genMinus(FILE* fileMIPS, quad* qd);
 
+
+// ====================
+// Functions operations
+
+
+/**
+* @brief genMIPS_genFunctionDeclaration Generate the MIPS code for the function declaration with the given quad
+* @param file_MIPS MIPS code file
+* @param qd given quad
+**/
+void genMIPS_genFunctionDeclaration(FILE* fileMIPS, quad* qd);
 
 #endif

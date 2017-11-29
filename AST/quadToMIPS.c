@@ -16,11 +16,19 @@ FILE* genMIPS_init(char* fileName, symTable* table)
     temp = table->table[i];
     while(temp != NULL)
     {
-      if(!temp->isConstant)
+      if(!temp->isConstant && !temp->isFunction)
       {
-        fprintf(fileMIPS, "%s:\t.word %d\n", temp->identifier, temp->value);
+        if(temp->content.type == INT)
+        {
+          fprintf(fileMIPS, "%s:\t.word %d\n", temp->identifier, temp->content.val.integer);
+        }
+        else if(temp->content.type == STRING)
+        {
+          fprintf(fileMIPS, "%s:\t.word %s\n", temp->identifier, temp->content.val.string);
+        }
+
       }
-      if(temp->isConstant)
+      if(temp->isConstant && !temp->isFunction)
       {
         fprintf(fileMIPS, "%s:\t.word 0\n", temp->identifier);
       }
@@ -29,7 +37,7 @@ FILE* genMIPS_init(char* fileName, symTable* table)
     } // While
   } // For
 
-  fprintf(fileMIPS, "\n\n\t.text\n\nmain:\n\n");
+  fprintf(fileMIPS, "\n\n\t.text"); // main:\n\n
 
   return fileMIPS;
 }
@@ -47,6 +55,7 @@ void genMIPS_genCode(char* fileName, quadList* quads , symTable* table)
     {
       // leafs
       case AST_INT     :  break;
+      case AST_STR     :  break;
       case AST_ID      :  break;
       // Binary operations
       case AST_OP_ADD  :  genMIPS_genAdd(fileMIPS, ql);
@@ -57,6 +66,8 @@ void genMIPS_genCode(char* fileName, quadList* quads , symTable* table)
                           break;
       case AST_OP_DIV :   genMIPS_genDiv(fileMIPS, ql);
                           break;
+      case AST_OP_AFCT:   genMIPS_genAffectation(fileMIPS, ql);
+                          break;
       // Unary operations
       case AST_OP_INCR :  genMIPS_genIncr(fileMIPS, ql);
                           break;
@@ -65,7 +76,7 @@ void genMIPS_genCode(char* fileName, quadList* quads , symTable* table)
       case AST_OP_MINUS : genMIPS_genMinus(fileMIPS, ql);
                           break;
       // Function
-      case AST_FUNC_DEF :
+      case AST_FUNC_DEF : genMIPS_genFunctionDeclaration(fileMIPS, ql);
                           break;
       case AST_FUNC_CALL:
                           break;
@@ -77,6 +88,20 @@ void genMIPS_genCode(char* fileName, quadList* quads , symTable* table)
   fprintf(fileMIPS, "jr $ra\n\n");
   fclose(fileMIPS);
 }
+
+
+// =================
+// Common operations
+
+void genMIPS_genAffectation(FILE* fileMIPS, quad* qd)
+{
+  fprintf(fileMIPS, "lw\t$t0, %s\n", qd->arg2->identifier);
+  fprintf(fileMIPS, "sw\t$t0, %s\n", qd->res->identifier);
+}
+
+
+// =====================
+// Arithmetic expression
 
 
 void genMIPS_genAdd(FILE* fileMIPS, quad* qd)
@@ -144,7 +169,14 @@ void genMIPS_genMinus(FILE* fileMIPS, quad* qd)
 }
 
 
+// =========
+// Functions
 
+
+void genMIPS_genFunctionDeclaration(FILE* fileMIPS, quad* qd)
+{
+  fprintf(fileMIPS, "\n\n%s:\n", qd->arg1->identifier);
+}
 
 
 

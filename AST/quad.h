@@ -117,11 +117,22 @@ void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, code
 
 
 /**
+ * @brief codegen_ast_affectation Auxiliary function for codegen_ast
+ * @param cg Codegen instance
+ * @param type Type of the AST node being transformed to a 3-adresses expression
+ * @param left Left member of the codegen instance being analyzed
+ * @param right Right member of the codegen instance being analyzed
+ * @param symbol_table
+ **/
+void codegen_ast_affectation(codegen* cg, enum ast_type type, codegen* left, codegen* right);
+
+
+/**
  * @brief codegen_ast_functionBody Auxiliary function for codegen_ast that generate the quads for the function body
  * @param cg Codegen instance
  * @param instruction current instruction to convert to quad
  * @param nextInstruction next instruction to convert to quad
- * @param ast AST 
+ * @param ast AST
  * @param symbol_table
  **/
 void codegen_ast_functionBody(codegen* cg, codegen* instruction, codegen* nextInstruction, ast* ast, symTable* symbol_table);

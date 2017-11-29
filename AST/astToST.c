@@ -25,6 +25,7 @@ ast* genSymTable_ast(ast* tree, symTable* st)
     {
       // leafs
       case AST_INT     :  break;
+      case AST_STR     :  break;
       case AST_ID      :  genSymTable_const(tree, st);
                           break;
       // Binary operations
@@ -37,6 +38,8 @@ ast* genSymTable_ast(ast* tree, symTable* st)
       case AST_OP_DIV :   genSymTable_binaryOperation(tree, st);
                           break;
       case AST_OP_DECL :  genSymTable_declaration(tree, st);
+                          break;
+      case AST_OP_AFCT :  genSymTable_binaryOperation(tree, st);
                           break;
       // Unary operations
       case AST_OP_INCR :  genSymTable_unaryOperation(tree, st);
@@ -126,8 +129,10 @@ ast* genSymTable_declaration(ast* tree, symTable* st)
 
 ast* genSymTable_functionDeclaration(ast* tree, symTable* st)
 {
-  print_ast(tree->component.function.identifier, 0);
-  genSymTable_ast(tree->component.function.identifier, st);
+  ast* funcIndentier = tree->component.function.identifier;
+  genSymTable_ast(funcIndentier, st);
+  symbol* tempId = symTable_lookUp(st, funcIndentier->component.identifier);
+  tempId->isFunction = true;
   genSymTable_ast(tree->component.function.arguments, st);
   genSymTable_ast(tree->component.function.body, st);
 

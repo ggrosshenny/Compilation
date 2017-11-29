@@ -7,10 +7,11 @@
 
 // Definitions
 #define  MAX_IDENTIFIER_LENGHT 42
+#define  MAX_STR_LENGHT 1024
 
 
 // Types definition
-enum ast_type{AST_INT, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
+enum ast_type{AST_INT, AST_STR, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
               AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_OP_DECL,
               AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_FUNC_BODY, AST_ID};
 
@@ -51,6 +52,8 @@ typedef struct s_ast
     }instructionsList;
       // Number
     int number;
+      // string
+    char* string;
       // Identifier
     char* identifier;
   }component ;
@@ -142,6 +145,13 @@ ast* ast_new_Instruction(ast* instruction0);
 * @param value
 */
 ast* ast_new_number(int value);
+
+
+/**
+* @brief ast_new_string Create a new string in the given ast
+* @param str
+*/
+ast* ast_new_string(char* str);
 
 
 /**

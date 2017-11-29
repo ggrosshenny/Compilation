@@ -19,6 +19,8 @@ void print_ast(ast* tree, int indent)
       // leafs
       case AST_INT     :  printf("%d\n", tree->component.number);
                           break;
+      case AST_STR     :  printf("%s\n", tree->component.string);
+                          break;
       case AST_ID      :  printf("%s\n", tree->component.identifier);
                           break;
       // Binary operations
@@ -144,6 +146,9 @@ void ast_free(ast* tree)
   {
     // leafs
     case AST_INT     :  free(tree);
+                        break;
+    case AST_STR     :  free(tree->component.string);
+                        free(tree);
                         break;
     case AST_ID      :  free(tree->component.identifier);
                         free(tree);
@@ -271,6 +276,15 @@ ast* ast_new_number(int value)
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_INT;
   newAst->component.number = value;
+  return newAst;
+}
+
+
+ast* ast_new_string(char* str)
+{
+  ast* newAst = calloc(1, sizeof(ast));
+  newAst->type = AST_STR;
+  newAst->component.string = strndup(str, MAX_STR_LENGHT);
   return newAst;
 }
 

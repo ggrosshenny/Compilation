@@ -44,7 +44,7 @@ void quadList_print(quadList* ql){
       case AST_OP_SUB  :  printf("\tAST_OP_SUB, index : %d\n", temp->index); break;
       case AST_OP_MULT :  printf("\tAST_OP_MULT, index : %d\n", temp->index); break;
       case AST_OP_DIV  :  printf("\tAST_OP_DIV, index : %d\n", temp->index); break;
-      case AST_OP_AFCT  : printf("\tAST_OP_AFCT, index : %d\n", temp->index); break;
+      case AST_OP_AFCT  : printf("\tAST_OP_AFCT, (arg1 - %s, arg2 - %s, res - %s) index : %d\n",temp->arg1->identifier, temp->arg2->identifier, temp->res->identifier, temp->index); break;
       case AST_OP_DECL  : printf("\tAST_OP_DECL, index : %d\n", temp->index); break;
       case AST_OP_INCR  : printf("\tAST_OP_INCR, index : %d\n", temp->index); break;
       case AST_OP_DECR  : printf("\tAST_OP_DECR, index : %d\n", temp->index); break;
@@ -166,7 +166,28 @@ void codegen_ast_operations(codegen* cg, enum ast_type type, codegen* left, code
   {
     quad_add(cg->code, type, left->result, NULL, cg->result);
   }
+}
 
+
+void codegen_ast_affectation(codegen* cg, enum ast_type type, codegen* left, codegen* right)
+{
+  cg->result = left->result;
+
+  if(right != NULL)
+  {
+    left->code = concat(left->code, right->code);
+  }
+
+  cg->code = concat(cg->code, left->code);
+
+  if(right != NULL)
+  {
+    quad_add(cg->code, type, left->result, right->result, cg->result);
+  }
+  else
+  {
+    quad_add(cg->code, type, left->result, NULL, cg->result);
+  }
 }
 
 
@@ -200,6 +221,13 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
       case AST_INT:
         newVal.integer = ast->component.number;
         cg->result = symTable_newTemp(symbol_table, INT, newVal);
+        quadList_free_keepList(left->code);
+        quadList_free_keepList(right->code);
+        break;
+
+      case AST_STR:
+        newVal.string = ast->component.string;
+        cg->result = symTable_newTemp(symbol_table, STRING, newVal);
         quadList_free_keepList(left->code);
         quadList_free_keepList(right->code);
         break;
@@ -257,15 +285,17 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         left = codegen_ast(left, ast->component.operation.left, symbol_table);
         right = codegen_ast(right, ast->component.operation.right, symbol_table);
 
-        codegen_ast_operations(cg, AST_OP_AFCT, left, right, symbol_table);
+        codegen_ast_affectation(cg, AST_OP_AFCT, left, right);
         break;
 
       case AST_OP_DECL:
 
         left = codegen_ast(left, ast->component.operation.left, symbol_table);
         quadList_free_keepList(right->code);
+        quadList_free_keepList(left->code);
+        cg->result = left->result;
 
-        codegen_ast_operations(cg, AST_OP_DECL, left, NULL, symbol_table);
+        //codegen_ast_operations(cg, AST_OP_DECL, left, NULL, symbol_table);
         break;
 
       // Functions

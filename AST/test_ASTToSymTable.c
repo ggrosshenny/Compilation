@@ -14,9 +14,10 @@ int main()
   assert(testVal->type == AST_INT);
   assert(testVal->component.number == 25);
 
-  ast* testIdDeclaration = ast_new_binaryOperation(AST_OP_DECL, testId, testVal);
+  ast* testIdDeclaration = ast_new_binaryOperation(AST_OP_DECL, testId, NULL);
+  ast* testIdAffectation = ast_new_binaryOperation(AST_OP_AFCT, testIdDeclaration, testVal);
 
-  ast* instr0 = ast_new_Instruction(testIdDeclaration);
+  ast* instr0 = ast_new_Instruction(testIdAffectation);
 
   // -2 * (10 * (test + 42))
   ast* astTest = NULL;
