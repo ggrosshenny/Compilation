@@ -23,6 +23,8 @@ EQ_OP     \=\=
 LEQ_OP    \<\=
 GEQ_OP    \>\=
 NOTEQ_OP  !\=
+AND_OP    \&\&
+OR_OP     \|\|
 
 
 %%
@@ -52,6 +54,10 @@ NOTEQ_OP  !\=
 {GEQ_OP}   { return GEQ; }
 
 {NOTEQ_OP} { return NOTEQ; }
+
+{AND_OP}   { return AND; }
+
+{OR_OP}    { return OR; }
 
 {NUMBER}   { yylval.val = atoi(yytext);
              return NUMBER;

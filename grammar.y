@@ -22,6 +22,7 @@
 %type <ast> expression;
 %type <ast> statement;
 %type <ast> condition;
+%type <ast> conditions_list;
 %type <ast> loop;
 %type <ast> instruction;
 %type <ast> instructions_block;
@@ -34,7 +35,7 @@
 %token <string> IDENTIFIER
 %token <string> TYPE
 %token <string> KEYWORDS
-%token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ
+%token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ AND OR
 
   // OPERATOR PRIORITIES
 %left '+' '-'
@@ -44,7 +45,7 @@
 %%
 axiom:
   function                      {  print_ast($$,0);
-/*
+
                                   symTable* symTableTest = symTable_init($$);
 
                                   genSymTable_ast($$, symTableTest);
@@ -56,7 +57,7 @@ axiom:
                                   symTable_free(symTableTest);
                                   ast_free($$);
                                   codegen_free(cgBis);
-*/
+
                                   exit(0);
                                 }
   ;
@@ -81,12 +82,18 @@ instruction:
   ;
 
 loop:
-  IF '(' condition ')' '{' instructions_block '}'                                           {}
-  | IF '(' condition ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         {}
-  | WHILE '(' condition ')' '{' instructions_block '}'                                      {}
-  | FOR '(' statement ';' condition ';' statement ')' '{' instructions_block '}'            {}
+  IF '(' conditions_list ')' '{' instructions_block '}'                                           {}
+  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         {}
+  | WHILE '(' conditions_list ')' '{' instructions_block '}'                                      {}
+  | FOR '(' statement ';' conditions_list ';' statement ')' '{' instructions_block '}'            {}
   ;
 
+conditions_list:
+  conditions_list AND conditions_list             {}
+    | conditions_list OR conditions_list          {}
+    | '(' conditions_list ')'                     {}
+    | condition                                   {}
+    ;
 
 condition:
   expression EQ expression      {}
