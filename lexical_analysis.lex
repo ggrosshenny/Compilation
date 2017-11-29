@@ -7,10 +7,23 @@
 
 %}
 TYPE      int
-KEYWORDS  if|else|while|for
+
+IF_KW     if
+ELSE_KW   else
+WHILE_KW  while
+FOR_KW    for
+
 NUMBER    0|([1-9][0-9]*)
 ID        [a-zA-Z_]([a-zA-Z0-9_])*
-OP        \+|\+\+|-|--|\*|\/|\(|\)|\;|\,|\{|\}|=|==|\<|\<=|\>|\>=|!=
+OP        \+|-|\*|\/|\(|\)|\;|\,|\{|\}|\=|\<|\>
+
+INCR_OP   \+\+
+DECR_OP   --
+EQ_OP     \=\=
+LEQ_OP    \<\=
+GEQ_OP    \>\=
+NOTEQ_OP  !\=
+
 
 %%
 
@@ -18,9 +31,27 @@ OP        \+|\+\+|-|--|\*|\/|\(|\)|\;|\,|\{|\}|=|==|\<|\<=|\>|\>=|!=
              return TYPE;
            }
 
-{KEYWORDS} { yylval.string = strdup(yytext);
-             return KEYWORDS;
-           }
+{IF_KW}    { return IF; }
+
+{ELSE_KW}  { return ELSE; }
+
+{WHILE_KW} { return WHILE; }
+
+{FOR_KW}   { return FOR; }
+
+{OP}       { return yytext[0]; }
+
+{DECR_OP}  { return DECR; }
+
+{INCR_OP}  { return INCR; }
+
+{EQ_OP}    { return EQ; }
+
+{LEQ_OP}   { return LEQ; }
+
+{GEQ_OP}   { return GEQ; }
+
+{NOTEQ_OP} { return NOTEQ; }
 
 {NUMBER}   { yylval.val = atoi(yytext);
              return NUMBER;
@@ -30,9 +61,9 @@ OP        \+|\+\+|-|--|\*|\/|\(|\)|\;|\,|\{|\}|=|==|\<|\<=|\>|\>=|!=
              return IDENTIFIER;
            }
 
-{OP}       { return yytext[0]; }
 
-\n
+
+[\n\t\ ]
 
 
 %%
