@@ -21,6 +21,9 @@
   // TYPES
 %type <ast> expression;
 %type <ast> statement;
+%type <ast> condition;
+%type <ast> conditions_list;
+%type <ast> loop;
 %type <ast> instruction;
 %type <ast> instructions_block;
 %type <ast> arguments;
@@ -32,6 +35,7 @@
 %token <string> IDENTIFIER
 %token <string> TYPE
 %token <string> KEYWORDS
+%token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ AND OR
 
   // OPERATOR PRIORITIES
 %left '+' '-'
@@ -63,7 +67,7 @@ function:
   ;
 
 arguments:
-  IDENTIFIER ',' arguments                  { $$ = ast_concat(ast_new_identifier($1),$3); }
+  IDENTIFIER ',' arguments              { $$ = ast_concat(ast_new_identifier($1),$3); }
   | IDENTIFIER                          { $$ = ast_new_identifier($1); }
   ;
 
@@ -73,13 +77,39 @@ instructions_block:
   ;
 
 instruction:
-  statement                             { $$ = ast_new_Instruction($1); }
+  statement ';'            { $$ = ast_new_Instruction($1); }
+  | loop                   {}
+  ;
+
+loop:
+  IF '(' conditions_list ')' '{' instructions_block '}'                                           {}
+  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         {}
+  | WHILE '(' conditions_list ')' '{' instructions_block '}'                                      {}
+  | FOR '(' statement ';' conditions_list ';' statement ')' '{' instructions_block '}'            {}
+  ;
+
+conditions_list:
+  conditions_list AND conditions_list             {}
+    | conditions_list OR conditions_list          {}
+    | '(' conditions_list ')'                     {}
+    | condition                                   {}
+    ;
+
+condition:
+  expression EQ expression      {}
+  | expression NOTEQ expression    {}
+  | expression LEQ expression    {}
+  | expression GEQ expression   {}
+  | expression '<' expression      {}
+  | expression '>' expression      {}
   ;
 
 statement:
-  IDENTIFIER '=' expression ';'         { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), $3); }
-  | TYPE IDENTIFIER ';'                 { $$ = ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($1)); }
-  | TYPE IDENTIFIER '=' expression ';'  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)), $4); }
+  IDENTIFIER '=' expression         { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), $3); }
+  | TYPE IDENTIFIER                 { $$ = ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)); }
+  | TYPE IDENTIFIER '=' expression  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)), $4); }
+  | IDENTIFIER DECR                 { $$ = ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1)); }
+  | IDENTIFIER INCR                 { $$ = ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)); }
   ;
 
 
@@ -90,8 +120,6 @@ expression:
   | expression '/' expression { $$ = ast_new_binaryOperation(AST_OP_DIV, $1, $3); }
   | '(' expression ')'        { $$ = $2; }
   | '-' expression            { $$ = ast_new_unaryOperation(AST_OP_MINUS, $2); }
-  | IDENTIFIER "--"           { $$ = ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1)); }
-  | IDENTIFIER "++"           { $$ = ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)); }
   | NUMBER                    { $$ = ast_new_number($1); }
   | IDENTIFIER                { $$ = ast_new_identifier($1); }
   ;
