@@ -13,7 +13,8 @@
 // Types definition
 enum ast_type{AST_INT, AST_STR, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
               AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_OP_DECL,
-              AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_FUNC_BODY, AST_ID};
+              AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_BOOL_EQ, AST_BOOL_NEQ,
+              AST_BOOL_TREE, AST_FUNC_BODY, AST_ID};
 
 // Ast definition
 typedef struct s_ast
@@ -50,6 +51,13 @@ typedef struct s_ast
       struct s_ast* instruction;     // Can be all kind of AST types
       struct s_ast* nextInstruction; // Have to be AST_FUNC_BODY !
     }instructionsList;
+      // Boolean expressions
+    struct
+    {
+      struct s_ast* boolExpr;     // Binary operation with BOOL_. type
+      struct s_ast* ast_true;     // Have to be AST_BOOL_TREE
+      struct s_ast* ast_false;    // Have to be AST_BOOL_TREE
+    }boolean;
       // Number
     int number;
       // string
@@ -145,6 +153,10 @@ ast* ast_new_Instruction(ast* instruction0);
 ast* ast_new_argument(ast* argument0);
 
 
+  // Boolean expressions
+
+ast* ast_new_boolExpr(ast* boolExpr0, ast* ast_true0, ast* ast_false0);
+
   // Variables and integers
 
 /**
@@ -166,7 +178,6 @@ ast* ast_new_string(char* str);
 * @param id
 */
 ast* ast_new_identifier(char* id);
-
 
 
 #endif

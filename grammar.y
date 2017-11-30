@@ -48,7 +48,7 @@
 %%
 axiom:
   function                      {  print_ast($$,0);
-
+/*
                                   symTable* symTableTest = symTable_init($$);
 
                                   genSymTable_ast($$, symTableTest);
@@ -60,7 +60,7 @@ axiom:
                                   symTable_free(symTableTest);
                                   ast_free($$);
                                   codegen_free(cgBis);
-
+*/
                                   exit(0);
                                 }
   ;
@@ -85,7 +85,7 @@ arguments_call:
 
 arguments_declaration:
   TYPE IDENTIFIER ',' arguments_declaration              { $$ = ast_concat(ast_new_identifier($2), $4); }
-  | TYPE IDENTIFIER                                      { $$ = ast_new_identifier($1); }
+  | TYPE IDENTIFIER                                      { $$ = ast_new_identifier($2); }
   ;
 
 instructions_block:
@@ -95,13 +95,13 @@ instructions_block:
 
 instruction:
   statement ';'            { $$ = ast_new_Instruction($1); }
-  | loop                   {}
-  | function_call          {}
+  | loop                   { $$ = ast_new_Instruction($1); }
+  | function_call  ';'        { $$ = ast_new_Instruction($1); }
   ;
 
 loop:
-  IF '(' conditions_list ')' '{' instructions_block '}'                                           {}
-  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         {}
+  IF '(' conditions_list ')' '{' instructions_block '}'                                           { $$ = ast_new_boolExpr($3, $6, NULL); }
+  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         { $$ = ast_new_boolExpr($3, $6, $10); }
   | WHILE '(' conditions_list ')' '{' instructions_block '}'                                      {}
   | FOR '(' statement ';' conditions_list ';' statement ')' '{' instructions_block '}'            {}
   ;
@@ -110,12 +110,12 @@ conditions_list:
   conditions_list AND conditions_list             {}
     | conditions_list OR conditions_list          {}
     | '(' conditions_list ')'                     {}
-    | condition                                   {}
+    | condition                                   { $$ = $1; }
     ;
 
 condition:
-  expression EQ expression      {}
-  | expression NOTEQ expression    {}
+  expression EQ expression        { $$ = ast_new_binaryOperation(AST_BOOL_EQ, $1, $3); }
+  | expression NOTEQ expression   { $$ = ast_new_binaryOperation(AST_BOOL_NEQ, $1, $3); }
   | expression LEQ expression    {}
   | expression GEQ expression   {}
   | expression '<' expression      {}

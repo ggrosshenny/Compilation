@@ -67,6 +67,23 @@ void print_ast(ast* tree, int indent)
                           printf("Minus\n");
                           print_ast(tree->component.operation.left, indent);
                           break;
+      // Boolean expressions
+      case AST_BOOL_TREE: indent++;
+                          printf("Boolean tree\n");
+                          print_ast(tree->component.boolean.boolExpr, indent);
+                          print_ast(tree->component.boolean.ast_true, indent);
+                          print_ast(tree->component.boolean.ast_false, indent);
+                          break;
+     case AST_BOOL_EQ   : indent++;
+                          printf("Equal\n");
+                          print_ast(tree->component.operation.left, indent);
+                          print_ast(tree->component.operation.right, indent);
+                          break;
+     case AST_BOOL_NEQ   : indent++;
+                          printf("Not equal\n");
+                          print_ast(tree->component.operation.left, indent);
+                          print_ast(tree->component.operation.right, indent);
+                          break;
       // Functions
       case AST_FUNC_DEF  :  indent++;
                             printf("Function definition\n");
@@ -202,6 +219,21 @@ void ast_free(ast* tree)
     case AST_OP_MINUS : ast_free(tree->component.operation.left);
                         free(tree);
                         break;
+    // Boolean expression
+    case AST_BOOL_TREE: ast_free(tree->component.boolean.boolExpr);
+                        ast_free(tree->component.boolean.ast_true);
+                        ast_free(tree->component.boolean.ast_false);
+                        free(tree);
+                        break;
+    case AST_BOOL_EQ  : ast_free(tree->component.operation.left);
+                        ast_free(tree->component.operation.right);
+                        free(tree);
+                        break;
+    case AST_BOOL_NEQ : ast_free(tree->component.operation.left);
+                        ast_free(tree->component.operation.right);
+                        free(tree);
+                        break;
+
     // Function
     case AST_FUNC_DEF : ast_free(tree->component.function.arguments);
                         ast_free(tree->component.function.body);
@@ -292,6 +324,18 @@ ast* ast_new_argument(ast* argument0)
   newAst->component.argumentsList.prevArg = NULL;
   newAst->component.argumentsList.argument = argument0;
   newAst->component.argumentsList.nextArg = NULL;
+  return newAst;
+}
+
+
+// Boolean expressions
+
+ast* ast_new_boolExpr(ast* boolExpr0, ast* ast_true0, ast* ast_false0){
+  ast* newAst = calloc(1, sizeof(ast));
+  newAst->type = AST_BOOL_TREE;
+  newAst->component.boolean.boolExpr = boolExpr0;
+  newAst->component.boolean.ast_true = ast_true0;
+  newAst->component.boolean.ast_false = ast_false0;
   return newAst;
 }
 
