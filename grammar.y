@@ -116,10 +116,10 @@ conditions_list:
 condition:
   expression EQ expression        { $$ = ast_new_binaryOperation(AST_BOOL_EQ, $1, $3); }
   | expression NOTEQ expression   { $$ = ast_new_binaryOperation(AST_BOOL_NEQ, $1, $3); }
-  | expression LEQ expression    {}
-  | expression GEQ expression   {}
-  | expression '<' expression      {}
-  | expression '>' expression      {}
+  | expression LEQ expression     { $$ = ast_new_binaryOperation(AST_BOOL_LEQ, $1, $3); }
+  | expression GEQ expression     { $$ = ast_new_binaryOperation(AST_BOOL_GEQ, $1, $3); }
+  | expression '<' expression     { $$ = ast_new_binaryOperation(AST_BOOL_LT, $1, $3); }
+  | expression '>' expression     { $$ = ast_new_binaryOperation(AST_BOOL_GT, $1, $3); }
   ;
 
 statement:

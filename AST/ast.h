@@ -14,7 +14,8 @@
 enum ast_type{AST_INT, AST_STR, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
               AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_OP_DECL,
               AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_BOOL_EQ, AST_BOOL_NEQ,
-              AST_BOOL_TREE, AST_FUNC_BODY, AST_ID};
+              AST_BOOL_GT, AST_BOOL_GEQ, AST_BOOL_LT, AST_BOOL_LEQ, AST_BOOL_TREE,
+              AST_FUNC_BODY, AST_ID};
 
 // Ast definition
 typedef struct s_ast
