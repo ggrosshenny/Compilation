@@ -26,7 +26,10 @@
 %type <ast> loop;
 %type <ast> instruction;
 %type <ast> instructions_block;
-%type <ast> arguments;
+%type <ast> arguments_declaration;
+%type <ast> arguments_call;
+%type <ast> function_declaration;
+%type <ast> function_call;
 %type <ast> function;
 %type <ast> axiom;
 
@@ -63,12 +66,26 @@ axiom:
   ;
 
 function:
-  TYPE IDENTIFIER '(' arguments ')' '{' instructions_block '}'        { $$ = ast_new_functionDefinition(ast_new_identifier($2), $4, $7); }
+  function_declaration function           { $$ = ast_concat($1, $2); }
+  | function_declaration                  { $$ = $1; }
   ;
 
-arguments:
-  IDENTIFIER ',' arguments              { $$ = ast_concat(ast_new_identifier($1),$3); }
-  | IDENTIFIER                          { $$ = ast_new_identifier($1); }
+function_call:
+  IDENTIFIER '(' arguments_call ')' ';'                  { $$ = ast_new_functionCall(ast_new_identifier($1), $3); }
+  ;
+
+function_declaration:
+  TYPE IDENTIFIER '(' arguments_declaration ')' '{' instructions_block '}'        { $$ = ast_new_functionDefinition(ast_new_identifier($2), $4, $7); }
+  ;
+
+arguments_call:
+  IDENTIFIER ',' arguments_call                          { $$ = ast_concat(ast_new_argument(ast_new_identifier($1)), $3); }
+  | IDENTIFIER                                           { $$ = ast_new_argument(ast_new_identifier($1)); }
+  ;
+
+arguments_declaration:
+  TYPE IDENTIFIER ',' arguments_declaration              { $$ = ast_concat(ast_new_identifier($2), $4); }
+  | TYPE IDENTIFIER                                      { $$ = ast_new_identifier($1); }
   ;
 
 instructions_block:
@@ -79,6 +96,7 @@ instructions_block:
 instruction:
   statement ';'            { $$ = ast_new_Instruction($1); }
   | loop                   {}
+  | function_call          {}
   ;
 
 loop:
