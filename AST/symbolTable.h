@@ -11,15 +11,23 @@
 // Dans la TDS : Number, Variable
 
 // types of values
-enum value_type{INT, STRING};
+enum value_type{INT, STRING, ARGUMENT};
 
 // ==========
 // Structures
+
+
+typedef struct s_args
+{
+  struct s_symbol* currentArg;
+  struct s_args* nextArg;
+}args;
 
 typedef union u_value
 {
   int integer;
   char* string;
+  args* arguments;
 }value;
 
 typedef struct s_symbol
@@ -30,14 +38,14 @@ typedef struct s_symbol
   bool isConstant;
     // Bool to know if the symbol is a function
   bool isFunction;
+    // Bool to know if the function takes arguments or not
+  bool isVoidFunction;
     // Content of the temporary
   struct
   {
     enum value_type type;
     value val;
   }content;
-    // Position of the symbol in stack (used for translation from quad to MIPS)
-  int stackPosition;
     // Next symbol in the list
   struct s_symbol* next;
 } symbol;

@@ -20,6 +20,15 @@ void genSymTable_error(char* message, ast* tree, symTable* st);
 
 // Main functions
 
+
+/**
+ * @brief genSymTable_init generate the symbol table from the given AST with
+ * symbol table initialization and add functions printi and printf to symbol table
+ * @param tree AST
+ **/
+symTable* genSymTable_init(ast* tree);
+
+
 /**
  * @brief genSymTable_ast generate the symbol table from the given AST
  * @param tree AST
@@ -59,6 +68,12 @@ ast* genSymTable_declaration(ast* tree, symTable* st);
  **/
 ast* genSymTable_functionDeclaration(ast* tree, symTable* st);
 
+
+/**
+ * @brief genSymTable_aux_newArg generate argument object from the given symbol
+ * @param smbl
+ **/
+args* genSymTable_aux_newArg(symbol* smbl);
 
 
 /**

@@ -26,6 +26,7 @@ int hash(char* key)
 void symbol_printList(symbol* symbolList)
 {
   symbol* temp = symbolList;
+  args* tempArg = NULL;
   while(temp != NULL)
   {
       if(temp->isConstant)
@@ -34,7 +35,17 @@ void symbol_printList(symbol* symbolList)
       }
       else if(temp->isFunction)
       {
-        printf("\t%s\tfunc\n", temp->identifier);
+        printf("\t%s\tfunc", temp->identifier);
+        if(!temp->isVoidFunction)
+        {
+          tempArg = temp->content.val.arguments;
+          while(tempArg != NULL)
+          {
+            printf(" - %s", tempArg->currentArg->identifier);
+            tempArg = tempArg->nextArg;
+          }
+        }
+        printf("\n");
       }
       else
       {
@@ -57,6 +68,7 @@ void symTable_print(symTable* table)
 {
   int i = 0;
   printf("Symbol table :\n");
+  printf("\tid\ttype\tvalue (or arguments list)\n");
   for(i=0; i<ST_HASHTABLE_SIZE; i++)
   {
     symbol_printList(table->table[i]);
@@ -78,8 +90,8 @@ symTable* symTable_init(ast* tree0)
   newTable->nb_temp = 0;
   newTable->tree = tree0;
 
-  symTable_addFunc(newTable, "print");
-  symTable_addFunc(newTable, "printi");
+  // symTable_addFunc(newTable, "printf");
+  // symTable_addFunc(newTable, "printi");
 
   return newTable;
 }
@@ -97,6 +109,8 @@ void symTable_free(symTable* table)
   int i=0;
   symbol* current = NULL;
   symbol* temp = NULL;
+  args* arg = NULL;
+  args* tempArg = NULL;
   for(i=0; i<ST_HASHTABLE_SIZE; i++)
   {
       current = table->table[i];
@@ -104,6 +118,16 @@ void symTable_free(symTable* table)
       {
         temp = current;
         current = current->next;
+        if(temp->isFunction)
+        {
+          arg = temp->content.val.arguments;
+          while(arg != NULL)
+          {
+            tempArg = arg;
+            arg = arg->nextArg;
+            free(tempArg);
+          }
+        }
         symbol_free(temp);
       }
   }
@@ -131,7 +155,6 @@ symbol* symTable_lookUp(symTable* table, char* name)
 symTable* symTable_add(symTable* table, symbol* symbol0)
 {
   int k_hash = hash(symbol0->identifier);
-  symbol0->stackPosition = -1;
   symbol* temp;
   // If the liste is empty
   if(table->table[k_hash] == NULL)

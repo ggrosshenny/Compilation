@@ -16,7 +16,7 @@ int main()
     ast* testVal = ast_new_number(25);
     assert(testVal->type == AST_INT);
     assert(testVal->component.number == 25);
-    
+
     ast* testIdDeclaration = ast_new_binaryOperation(AST_OP_DECL, testId, NULL);
     ast* testIdAffectation = ast_new_binaryOperation(AST_OP_AFCT, testIdDeclaration, testVal);
 
@@ -64,8 +64,17 @@ int main()
     ast* id = ast_new_identifier("lol");
     ast* instr2 = ast_new_Instruction(id);
     ast* temp = ast_concat(instr0, instr2);
+
+    ast* arg1ID = ast_new_identifier("arg1");
+    ast* arg2ID = ast_new_identifier("arg2");
+    ast* arg1Decl = ast_new_binaryOperation(AST_OP_DECL, arg1ID, NULL);
+    ast* arg2Decl = ast_new_binaryOperation(AST_OP_DECL, arg2ID, NULL);
+    ast* arg1ARG = ast_new_argument(arg1Decl);
+    ast* arg2ARG = ast_new_argument(arg2Decl);
+    ast* tempArg = ast_concat(arg1ARG, arg2ARG);
+
     ast* funcID = ast_new_identifier("main");
-    astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp, instr1));
+    astTest = ast_new_functionDefinition(funcID, tempArg, ast_concat(temp, instr1));
 
     print_ast(astTest, 0);
 

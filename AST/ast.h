@@ -40,9 +40,9 @@ typedef struct s_ast
     struct
     {
       struct s_ast* prevArg; // Have to be AST_FUNC_ARG !
-      struct s_ast* arg_AST; // Have to be AST_ID or AST_INT !
+      struct s_ast* argument; // Have to be AST_ID or AST_INT !
       struct s_ast* nextArg; // Have to be AST_FUNC_ARG !
-    }arguments;
+    }argumentsList;
       // Body of functions
     struct
     {
@@ -136,6 +136,13 @@ ast* ast_new_functionCall(ast* id, ast* arguments);
 * @param instruction0 instruction to encapsulate
 */
 ast* ast_new_Instruction(ast* instruction0);
+
+
+/**
+* @brief ast_new_argument Create a new argument node in the given ast
+* @param argument 0 argument to encapsulate
+*/
+ast* ast_new_argument(ast* argument0);
 
 
   // Variables and integers

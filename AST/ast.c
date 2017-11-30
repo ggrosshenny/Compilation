@@ -74,6 +74,11 @@ void print_ast(ast* tree, int indent)
                             print_ast(tree->component.function.arguments, indent);
                             print_ast(tree->component.function.body, indent);
                             break;
+      case AST_FUNC_ARG  :  indent++;
+                            printf("Argument\n");
+                            print_ast(tree->component.argumentsList.argument, indent);
+                            print_ast(tree->component.argumentsList.nextArg, --indent);
+                            break;
       case AST_FUNC_CALL :  indent++;
                             printf("Function call\n");
                             print_ast(tree->component.function.identifier, indent);
@@ -99,7 +104,6 @@ ast* ast_concat(ast* mainAST, ast* astToAdd)
   // Verification
   if(mainAST->type != astToAdd->type)
   {
-    printf("Coucou\n");
     ast_free(mainAST);
     ast_free(astToAdd);
     fprintf(stderr, "ERROR : You're trying to concat two AST with different types !\n");
@@ -118,6 +122,16 @@ ast* ast_concat(ast* mainAST, ast* astToAdd)
       }
       temp->component.instructionsList.nextInstruction = astToAdd;
       astToAdd->component.instructionsList.prevInstruction = temp;
+      break;
+
+    case AST_FUNC_ARG  :
+      temp = mainAST;
+      while(temp->component.argumentsList.nextArg != NULL)
+      {
+        temp = temp->component.argumentsList.argument;
+      }
+      temp->component.argumentsList.nextArg = astToAdd;
+      astToAdd->component.argumentsList.prevArg = temp;
       break;
 
     default:
@@ -202,6 +216,10 @@ void ast_free(ast* tree)
                         ast_free(tree->component.instructionsList.nextInstruction);
                         free(tree);
                         break;
+    case AST_FUNC_ARG:  ast_free(tree->component.argumentsList.argument);
+                        ast_free(tree->component.argumentsList.nextArg);
+                        free(tree);
+                        break;
 
     default         :   break;
   }
@@ -264,6 +282,16 @@ ast* ast_new_Instruction(ast* instruction0)
   newAst->component.instructionsList.prevInstruction = NULL;
   newAst->component.instructionsList.instruction = instruction0;
   newAst->component.instructionsList.nextInstruction = NULL;
+  return newAst;
+}
+
+ast* ast_new_argument(ast* argument0)
+{
+  ast* newAst = calloc(1, sizeof(ast));
+  newAst->type = AST_FUNC_ARG;
+  newAst->component.argumentsList.prevArg = NULL;
+  newAst->component.argumentsList.argument = argument0;
+  newAst->component.argumentsList.nextArg = NULL;
   return newAst;
 }
 
