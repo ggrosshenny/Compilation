@@ -38,10 +38,28 @@ int main()
   ast* mult2 = ast_new_binaryOperation(AST_OP_MULT, minus, mult);
 
   ast* instr1 = ast_new_Instruction(mult2);
+
   ast* temp = ast_concat(instr0, instr2);
 
+  ast* temp2 = ast_concat(temp, instr1);
+
+  ast* printi_name = ast_new_identifier("printi");
+  ast* printi_argVal = ast_new_number(42);
+  ast* printi_args = ast_new_argument(printi_argVal);
+  ast* printi_call = ast_new_functionCall(printi_name, printi_args);
+  ast* printi_inst = ast_new_Instruction(printi_call);
+
+  ast* printi2_name = ast_new_identifier("printi");
+  ast* printi2_argVal = ast_new_number(17);
+  ast* printi2_args = ast_new_argument(printi2_argVal);
+  ast* printi21_argVal = ast_new_number(18);
+  ast* printi21_args = ast_new_argument(printi21_argVal);
+  ast* printi2_call = ast_new_functionCall(printi2_name, ast_concat(printi2_args, printi21_args));
+  ast* printi2_inst = ast_new_Instruction(printi2_call);
+  ast* temp3 = ast_concat(printi_inst, printi2_inst);
+
   ast* funcID = ast_new_identifier("main");
-  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp, instr1));
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, temp3));
 
   symTable* symTableTest = symTable_init(astTest);
   genSymTable_ast(astTest, symTableTest);

@@ -138,6 +138,27 @@ void codegen_ast_affectation(codegen* cg, enum ast_type type, codegen* left, cod
 void codegen_ast_functionBody(codegen* cg, codegen* instruction, codegen* nextInstruction, ast* ast, symTable* symbol_table);
 
 
+
+/**
+ * @brief codegen_ast_functionArguments Auxiliary function for codegen_ast that generate the quads for the function arguments (when the function is called)
+ * @param cg Codegen instance
+ * @param argument current argument to convert to quad
+ * @param nextArgument next argument to convert to quad
+ * @param ast AST
+ * @param symbol_table
+ **/
+void codegen_ast_functionArguments(codegen* cg, codegen* argument, codegen* nextArgument, ast* ast, symTable* symbol_table);
+
+
+/**
+ * @brief codegen_ast_functionCall Auxiliary function for codegen_ast that generate the quads for the function call
+ * @param cg Codegen instance
+ * @param arguments arguments to convert to quad
+ * @param identifier name of the function to call
+ **/
+void codegen_ast_functionCall(codegen* cg, codegen* arguments, codegen* identifier, ast* ast, symTable* symbol_table);
+
+
 /**
 * @brief codegen_ast  Generate quads through recursive AST analysis
 * @param ast Tree to analyze

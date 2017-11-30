@@ -44,7 +44,7 @@ void quadList_print(quadList* ql){
       case AST_OP_SUB  :  printf("\tAST_OP_SUB, index : %d\n", temp->index); break;
       case AST_OP_MULT :  printf("\tAST_OP_MULT, index : %d\n", temp->index); break;
       case AST_OP_DIV  :  printf("\tAST_OP_DIV, index : %d\n", temp->index); break;
-      case AST_OP_AFCT  : printf("\tAST_OP_AFCT, (arg1 - %s, arg2 - %s, res - %s) index : %d\n",temp->arg1->identifier, temp->arg2->identifier, temp->res->identifier, temp->index); break;
+      case AST_OP_AFCT  : printf("\tAST_OP_AFCT, index : %d\n", temp->index); break;
       case AST_OP_DECL  : printf("\tAST_OP_DECL, index : %d\n", temp->index); break;
       case AST_OP_INCR  : printf("\tAST_OP_INCR, index : %d\n", temp->index); break;
       case AST_OP_DECR  : printf("\tAST_OP_DECR, index : %d\n", temp->index); break;
@@ -52,6 +52,7 @@ void quadList_print(quadList* ql){
       case AST_FUNC_DEF : printf("\tAST_FUNC_DEF, index : %d\n", temp->index); break;
       case AST_FUNC_CALL: printf("\tAST_FUNC_CALL, index : %d\n", temp->index); break;
       case AST_FUNC_BODY: printf("\tAST_FUNC_BODY, index : %d\n", temp->index); break;
+      case AST_FUNC_ARG : printf("\tAST_FUNC_ARG, index : %d, val : %d\n", temp->index, temp->res->content.val.integer); break;
       default         :   break;
     }
     temp = temp->next;
@@ -205,6 +206,86 @@ void codegen_ast_functionBody(codegen* cg, codegen* instruction, codegen* nextIn
   }
   // Just concat the codes of the instructions
   cg->code = concat(cg->code, instruction->code);
+
+}
+
+
+void codegen_ast_functionArguments(codegen* cg, codegen* argument, codegen* nextArgument, ast* ast, symTable* symbol_table)
+{
+  argument = codegen_ast(argument, ast->component.argumentsList.argument, symbol_table);
+  if(ast->component.argumentsList.nextArg != NULL)
+  {
+    nextArgument = codegen_ast(nextArgument, ast->component.argumentsList.nextArg, symbol_table);
+    printf("nextArg : %d\n", nextArgument->result->content.val.integer);
+  }
+  else
+  {
+    quadList_free_keepList(nextArgument->code);
+  }
+
+  cg->result = argument->result;
+
+  if(ast->component.argumentsList.nextArg != NULL)
+  {
+    quad* temp;
+    quadList* qlTemp;
+    quad_add(argument->code, AST_FUNC_ARG, argument->result, nextArgument->result, cg->result);
+
+    temp = argument->code->list;
+    while((temp->next != argument->code->last) && (temp->next != NULL))
+    {
+      temp = temp->next;
+    }
+    argument->code->last->next = argument->code->last;
+    argument->code->last = nextArgument->code->list;
+    temp->next = argument->code->last;
+
+    qlTemp = cg->code;
+    cg->code = argument->code;
+    quadList_free_keepList(qlTemp);
+    quadList_free_keepList(nextArgument->code);
+  }
+  else
+  {
+    quad_add(cg->code, AST_FUNC_ARG, argument->result, NULL, cg->result);
+    quadList_free_keepList(argument->code);
+  }
+
+}
+
+
+void codegen_ast_functionCall(codegen* cg, codegen* arguments, codegen* identifier, ast* ast, symTable* symbol_table)
+{
+  // WARNING : ONLY good for printi and printf !
+  //           need to find a way to take multiple arguments, stor it and use it
+  //           Exemple : les mettre dans la table des symboles lors de la def de la fonctions
+  //           ou bien créer un temp dès qu'on rencontre un argument
+  if(ast->component.function.arguments != NULL)
+  {
+    arguments = codegen_ast(arguments, ast->component.function.arguments, symbol_table);
+    arguments->code = concat(arguments->code, identifier->code);
+  }
+  else
+  {
+    quadList_free_keepList(arguments->code);
+  }
+
+  identifier = codegen_ast(identifier, ast->component.function.identifier, symbol_table);
+
+  cg->code = concat(cg->code, arguments->code);
+  cg->result = identifier->result;
+
+  quadList_free_keepList(identifier->code);
+
+  if(ast->component.function.arguments != NULL)
+  {
+    quad_add(cg->code, AST_FUNC_CALL, NULL, NULL, cg->result);
+  }
+  else
+  {
+    quad_add(cg->code, AST_FUNC_CALL, arguments->result, NULL, cg->result);
+  }
+
 }
 
 
@@ -299,7 +380,6 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         break;
 
       // Functions
-
       case AST_FUNC_DEF:
         // Need to create function "genCode_createFunc" for ID and Arguments section in function AST
         left = codegen_ast(left, ast->component.function.identifier, symbol_table);
@@ -311,6 +391,15 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
       case AST_FUNC_BODY:
         codegen_ast_functionBody(cg, left, right, ast, symbol_table);
+        break;
+
+      case AST_FUNC_ARG:
+        // Need to take care of number of arguments in quadToMIPS with the list of args in the symbol table !
+        codegen_ast_functionArguments(cg, left, right, ast, symbol_table);
+        break;
+
+      case AST_FUNC_CALL:
+        codegen_ast_functionCall(cg, left, right, ast, symbol_table);
         break;
 
       default:
