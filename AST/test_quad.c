@@ -61,7 +61,7 @@ int main()
   ast* funcID = ast_new_identifier("main");
   astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, temp3));
 
-  symTable* symTableTest = symTable_init(astTest);
+  symTable* symTableTest = genSymTable_init(astTest);
   genSymTable_ast(astTest, symTableTest);
 
   print_ast(astTest, 0);

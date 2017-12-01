@@ -4,6 +4,7 @@ int main()
 {
 
   // Creation de l'AST pour les tests
+
   // Test declaration
   ast* testId = ast_new_identifier("Test");
   ast* testVal = ast_new_number(25);
@@ -12,10 +13,13 @@ int main()
 
   ast* instr0 = ast_new_Instruction(testIdAffectation);
 
+  ast* testId2 = ast_new_identifier("Test2");
+  ast* testVal2 = ast_new_string("LOLOLOLOLOLOL");
+  ast* testDecl2 = ast_new_binaryOperation(AST_OP_DECL, testId2, testVal2);
+  ast* instr2 = ast_new_Instruction(testDecl2);
+
   // -2 * (10 * (test + 42))
   ast* astTest = NULL;
-    // Test declaration
-  //ast* testDef = ast_new_binaryOperation()
     // leftOp
   ast* leftOp = ast_new_identifier("Test");
     // rightOp
@@ -35,16 +39,45 @@ int main()
 
   ast* instr1 = ast_new_Instruction(mult2);
 
-  ast* funcID = ast_new_identifier("main");
-  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(instr0, instr1));
+  ast* temp = ast_concat(instr0, instr2);
 
-  symTable* symTableTest = symTable_init(astTest);
+  ast* temp2 = ast_concat(temp, instr1);
+
+  // Test printi
+  ast* printi_name = ast_new_identifier("printi");
+  ast* printi_argVal = ast_new_number(42);
+  ast* printi_args = ast_new_argument(printi_argVal);
+  ast* printi_call = ast_new_functionCall(printi_name, printi_args);
+  ast* printi_inst = ast_new_Instruction(printi_call);
+
+  // Test printf
+  ast* printf_name = ast_new_identifier("printf");
+  ast* printf_argVal = ast_new_string("Hello World\n");
+  ast* printf_args = ast_new_argument(printf_argVal);
+  ast* printf_call = ast_new_functionCall(printf_name, printf_args);
+  ast* printf_inst = ast_new_Instruction(printf_call);
+  ast* temp_print = ast_concat(printi_inst, printf_inst);
+
+  // Test if compilation error is handled
+  // ast* printi2_name = ast_new_identifier("printi");
+  // ast* printi2_argVal = ast_new_number(17);
+  // ast* printi2_args = ast_new_argument(printi2_argVal);
+  // ast* printi21_argVal = ast_new_number(18);
+  // ast* printi21_args = ast_new_argument(printi21_argVal);
+  // ast* printi2_call = ast_new_functionCall(printi2_name, ast_concat(printi2_args, printi21_args));
+  // ast* printi2_inst = ast_new_Instruction(printi2_call);
+  // ast* temp3 = ast_concat(printi_inst, printi2_inst);
+
+  ast* funcID = ast_new_identifier("main");
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, temp_print));
+
+  symTable* symTableTest = genSymTable_init(astTest);
 
   genSymTable_ast(astTest, symTableTest);
   codegen* cgBis = codegen_init();
   cgBis = codegen_ast(cgBis, astTest, symTableTest);
 
-  genMIPS_genCode("test_quadToMIPS.test", cgBis->code, symTableTest);
+  genMIPS_genCode("test_quadToMIPS.test", cgBis, symTableTest);
 
   // Frees and close here
   symTable_free(symTableTest);

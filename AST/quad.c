@@ -216,7 +216,6 @@ void codegen_ast_functionArguments(codegen* cg, codegen* argument, codegen* next
   if(ast->component.argumentsList.nextArg != NULL)
   {
     nextArgument = codegen_ast(nextArgument, ast->component.argumentsList.nextArg, symbol_table);
-    printf("nextArg : %d\n", nextArgument->result->content.val.integer);
   }
   else
   {
@@ -272,10 +271,11 @@ void codegen_ast_functionCall(codegen* cg, codegen* arguments, codegen* identifi
 
   identifier = codegen_ast(identifier, ast->component.function.identifier, symbol_table);
 
+  quadList_free_keepList(identifier->code);
   cg->code = concat(cg->code, arguments->code);
   cg->result = identifier->result;
 
-  quadList_free_keepList(identifier->code);
+  printf("id : %s\n", cg->result->identifier);
 
   if(ast->component.function.arguments != NULL)
   {
