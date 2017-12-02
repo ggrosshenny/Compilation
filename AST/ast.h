@@ -13,9 +13,10 @@
 // Types definition
 enum ast_type{AST_INT, AST_STR, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
               AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_OP_DECL,
-              AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_BOOL_EQ, AST_BOOL_NEQ,
-              AST_BOOL_GT, AST_BOOL_GEQ, AST_BOOL_LT, AST_BOOL_LEQ, AST_BOOL_TREE,
-              AST_FUNC_BODY, AST_ID};
+              AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_BOOL_NOT, AST_BOOL_EQ,
+              AST_BOOL_NEQ, AST_BOOL_GT, AST_BOOL_GEQ, AST_BOOL_LT, AST_BOOL_LEQ,
+              AST_AND_TREE, AST_OR_TREE, AST_BOOL_TREE, AST_IF, AST_FUNC_BODY,
+              AST_ID};
 
 // Ast definition
 typedef struct s_ast
@@ -52,6 +53,12 @@ typedef struct s_ast
       struct s_ast* instruction;     // Can be all kind of AST types
       struct s_ast* nextInstruction; // Have to be AST_FUNC_BODY !
     }instructionsList;
+      // Lists of conditions
+    struct
+    {
+      struct s_ast* condition;
+      struct s_ast* nextCondition;
+    }conditionsList;
       // Boolean expressions
     struct
     {
@@ -155,7 +162,20 @@ ast* ast_new_argument(ast* argument0);
 
 
   // Boolean expressions
+/**
+ * @brief ast_new_conditionsList Create a list of boolean conditions
+ * @param type  Type of the boolean global expression
+ * @param condition0  Current boolean expression in the list
+ * @param nextCondition0 Next boolean expression in the list
+ */
+ast* ast_new_conditionsList(enum ast_type type, ast* condition0, ast* nextCondition0);
 
+/**
+ * @brief ast_new_boolExpr Create a new boolean expression
+ * @param boolExpr0 Boolean expression
+ * @param ast_true0 Actions to be done if the expression is true
+ * @param ast_false0 Actions to be done if the expression is false
+ */
 ast* ast_new_boolExpr(ast* boolExpr0, ast* ast_true0, ast* ast_false0);
 
   // Variables and integers

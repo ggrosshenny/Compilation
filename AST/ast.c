@@ -365,6 +365,15 @@ ast* ast_new_argument(ast* argument0)
 
 // Boolean expressions
 
+
+ast* ast_new_conditionsList(enum ast_type type, ast* condition0, ast* nextCondition0){
+  ast* newAst = calloc(1, sizeof(ast));
+  newAst->type = type;
+  newAst->component.conditionsList.condition = condition0;
+  newAst->component.conditionsList.nextCondition = nextCondition0;
+  return newAst;
+}
+
 ast* ast_new_boolExpr(ast* boolExpr0, ast* ast_true0, ast* ast_false0){
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_BOOL_TREE;
