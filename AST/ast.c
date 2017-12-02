@@ -104,6 +104,16 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.operation.left, indent);
                           print_ast(tree->component.operation.right, indent);
                           break;
+    case AST_GOTO       : indent++;
+                          printf("GOTO\n");
+                          print_ast(tree->component.operation.left, indent);
+                          break;
+    case AST_IF         : indent++;
+                          printf("control structure IF\n");
+                          print_ast(tree->component.boolean.boolExpr, indent);
+                          print_ast(tree->component.boolean.ast_true, indent);
+                          print_ast(tree->component.boolean.ast_false, indent);
+                          break;
       // Functions
       case AST_FUNC_DEF  :  indent++;
                             printf("Function definition\n");
@@ -269,6 +279,13 @@ void ast_free(ast* tree)
                         ast_free(tree->component.operation.right);
                         free(tree);
                         break;
+    case AST_GOTO     : free(tree);
+                        break;
+    case AST_IF       : ast_free(tree->component.boolean.boolExpr);
+                        ast_free(tree->component.boolean.ast_true);
+                        ast_free(tree->component.boolean.ast_false);
+                        free(tree);
+                        break;
     // Function
     case AST_FUNC_DEF : ast_free(tree->component.function.arguments);
                         ast_free(tree->component.function.body);
@@ -365,14 +382,44 @@ ast* ast_new_argument(ast* argument0)
 
 // Boolean expressions
 
+void placeGoto(ast* boolTree0, ast* true0, ast* false0){
 
-ast* ast_new_conditionsList(enum ast_type type, ast* condition0, ast* nextCondition0){
+  if(boolTree0->component.boolean.ast_true == NULL
+     && boolTree0->component.boolean.ast_false == NULL){
+
+    boolTree0->component.boolean.ast_true = ast_new_unaryOperation(AST_GOTO, true0);
+    boolTree0->component.boolean.ast_false = ast_new_unaryOperation(AST_GOTO, false0);
+  }
+
+  else{
+
+    if(boolTree0->component.boolean.ast_true != NULL){
+      placeGoto(boolTree0->component.boolean.ast_true, true0, false0);
+    }
+    else{
+      boolTree0->component.boolean.ast_true = ast_new_unaryOperation(AST_GOTO, true0);
+    }
+
+    if(boolTree0->component.boolean.ast_false != NULL){
+      placeGoto(boolTree0->component.boolean.ast_false, true0, false0);
+    }
+    else{
+      boolTree0->component.boolean.ast_false = ast_new_unaryOperation(AST_GOTO, false0);
+    }
+
+  }
+}
+
+
+ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* true0, ast* false0){
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = type;
-  newAst->component.conditionsList.condition = condition0;
-  newAst->component.conditionsList.nextCondition = nextCondition0;
+  newAst->component.boolean.boolExpr = conditionsList0;
+  newAst->component.boolean.ast_true = true0;
+  newAst->component.boolean.ast_false = false0;
   return newAst;
 }
+
 
 ast* ast_new_boolExpr(ast* boolExpr0, ast* ast_true0, ast* ast_false0){
   ast* newAst = calloc(1, sizeof(ast));
@@ -382,7 +429,6 @@ ast* ast_new_boolExpr(ast* boolExpr0, ast* ast_true0, ast* ast_false0){
   newAst->component.boolean.ast_false = ast_false0;
   return newAst;
 }
-
 
 // Variables and integers
 

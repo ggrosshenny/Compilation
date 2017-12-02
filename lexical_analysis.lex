@@ -7,6 +7,7 @@
 
 %}
 TYPE      int
+STRING    \"([^\"\\]|\\.)*\"
 
 IF_KW     if
 ELSE_KW   else
@@ -31,6 +32,10 @@ OR_OP     \|\|
 
 {TYPE}     { yylval.string = strdup(yytext);
              return TYPE;
+           }
+
+{STRING}   { yylval.string = strdup(yytext);
+             return STRING_LIT;
            }
 
 {IF_KW}    { return IF; }

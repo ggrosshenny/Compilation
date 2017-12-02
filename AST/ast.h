@@ -16,7 +16,7 @@ enum ast_type{AST_INT, AST_STR, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
               AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_BOOL_NOT, AST_BOOL_EQ,
               AST_BOOL_NEQ, AST_BOOL_GT, AST_BOOL_GEQ, AST_BOOL_LT, AST_BOOL_LEQ,
               AST_AND_TREE, AST_OR_TREE, AST_BOOL_TREE, AST_GOTO, AST_IF, AST_FUNC_BODY,
-              AST_ID};
+              AST_ID, AST_CREATE_LABEL};
 
 // Ast definition
 typedef struct s_ast
@@ -157,12 +157,22 @@ ast* ast_new_argument(ast* argument0);
 
   // Boolean expressions
 /**
- * @brief ast_new_conditionsList Create a list of boolean conditions
- * @param type  Type of the boolean global expression
- * @param condition0  Current boolean expression in the list
- * @param nextCondition0 Next boolean expression in the list
+ * @brief placeGoto   Replace every NULL pointer in boolTree's members with GOTO ASTs
+ *                    pointing to true0 or false0
+ * @param boolTree    AST to be processed
+ * @param true0       Instructions block to be pointed by ast_true members of the AST
+ * @param false0      Instructions block to be pointed by ast_false members of the AST
  */
-ast* ast_new_conditionsList(enum ast_type type, ast* condition0, ast* nextCondition0);
+void placeGoto(ast* boolTree, ast* true0, ast* false0);
+
+/**
+ * @brief ast_new_controlStructure Create a list of boolean conditions
+ * @param type  Type of the boolean global expression
+ * @param conditionsList0  Current boolean expression in the list
+ * @param true0 Actions to be done if the control structure's result is true
+ * @param false0 Actions to be done if the control structure's result is false
+ */
+ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* true0, ast* false0);
 
 /**
  * @brief ast_new_boolExpr Create a new boolean expression

@@ -8,6 +8,7 @@
   void yyerror(char*);
   extern FILE *yyin;
   extern int yylineno;
+  void yyfree();
 
 %}
   // TYPE DEFINITIONS
@@ -37,7 +38,7 @@
 %token <val> NUMBER
 %token <string> IDENTIFIER
 %token <string> TYPE
-%token <string> KEYWORDS
+%token <string> STRING_LIT
 %token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ AND OR
 
   // OPERATOR PRIORITIES
@@ -61,6 +62,7 @@ axiom:
                                   ast_free($$);
                                   codegen_free(cgBis);
 */
+                                  ast_free($$);
                                   exit(0);
                                 }
   ;
@@ -71,21 +73,23 @@ function:
   ;
 
 function_call:
-  IDENTIFIER '(' arguments_call ')' ';'                  { $$ = ast_new_functionCall(ast_new_identifier($1), $3); }
+  IDENTIFIER '(' arguments_call ')' ';'                  { $$ = ast_new_functionCall(ast_new_identifier($1), $3); free($1); }
   ;
 
 function_declaration:
-  TYPE IDENTIFIER '(' arguments_declaration ')' '{' instructions_block '}'        { $$ = ast_new_functionDefinition(ast_new_identifier($2), $4, $7); }
+  TYPE IDENTIFIER '(' arguments_declaration ')' '{' instructions_block '}'        { $$ = ast_new_functionDefinition(ast_new_identifier($2), $4, $7); free($1); free($2); }
   ;
 
 arguments_call:
-  IDENTIFIER ',' arguments_call                          { $$ = ast_concat(ast_new_argument(ast_new_identifier($1)), $3); }
-  | IDENTIFIER                                           { $$ = ast_new_argument(ast_new_identifier($1)); }
+  IDENTIFIER ',' arguments_call                          { $$ = ast_concat(ast_new_argument(ast_new_identifier($1)), $3); free($1); }
+  | STRING_LIT ',' arguments_call                        { $$ = ast_concat(ast_new_string($1), $3); }
+  | IDENTIFIER                                           { $$ = ast_new_argument(ast_new_identifier($1)); free($1); }
+  | STRING_LIT                                           { $$ = ast_new_string($1);}
   ;
 
 arguments_declaration:
-  TYPE IDENTIFIER ',' arguments_declaration              { $$ = ast_concat(ast_new_identifier($2), $4); }
-  | TYPE IDENTIFIER                                      { $$ = ast_new_identifier($2); }
+  TYPE IDENTIFIER ',' arguments_declaration              { $$ = ast_concat(ast_new_identifier($2), $4); free($1); free($2); }
+  | TYPE IDENTIFIER                                      { $$ = ast_new_identifier($2); free($1); free($2); }
   ;
 
 instructions_block:
@@ -96,21 +100,21 @@ instructions_block:
 instruction:
   statement ';'            { $$ = ast_new_Instruction($1); }
   | loop                   { $$ = ast_new_Instruction($1); }
-  | function_call  ';'        { $$ = ast_new_Instruction($1); }
+  | function_call  ';'     { $$ = ast_new_Instruction($1); }
   ;
 
 loop:
-  IF '(' conditions_list ')' '{' instructions_block '}'                                           { $$ = ast_new_boolExpr($3, $6, NULL); }
-  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         { $$ = ast_new_boolExpr($3, $6, $10); }
+  IF '(' conditions_list ')' '{' instructions_block '}'                                           { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_IF, $3, $6, NULL); }
+  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         { placeGoto($3, $6, $10); $$ = ast_new_controlStructure(AST_IF, $3, $6, $10); }
   | WHILE '(' conditions_list ')' '{' instructions_block '}'                                      {}
   | FOR '(' statement ';' conditions_list ';' statement ')' '{' instructions_block '}'            {}
   ;
 
 conditions_list:
-  conditions_list AND conditions_list             {}
-    | conditions_list OR conditions_list          {}
-    | '(' conditions_list ')'                     {}
-    | condition                                   { $$ = $1; }
+  conditions_list AND conditions_list             { $1->component.boolean.ast_true = $3; }
+    | conditions_list OR conditions_list          { $1->component.boolean.ast_false = $3; }
+    | '(' conditions_list ')'                     { $$ = ast_new_boolExpr($2, NULL, NULL); }
+    | condition                                   { $$ = ast_new_boolExpr($1, NULL, NULL); }
     ;
 
 condition:
@@ -123,11 +127,11 @@ condition:
   ;
 
 statement:
-  IDENTIFIER '=' expression         { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), $3); }
-  | TYPE IDENTIFIER                 { $$ = ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)); }
-  | TYPE IDENTIFIER '=' expression  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)), $4); }
-  | IDENTIFIER DECR                 { $$ = ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1)); }
-  | IDENTIFIER INCR                 { $$ = ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)); }
+  IDENTIFIER '=' expression         { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), $3); free($1); }
+  | TYPE IDENTIFIER                 { $$ = ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)); free($1); free($2); }
+  | TYPE IDENTIFIER '=' expression  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)), $4); free($1); free($2); }
+  | IDENTIFIER DECR                 { $$ = ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1)); free($1); }
+  | IDENTIFIER INCR                 { $$ = ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)); free($1); }
   ;
 
 
@@ -139,7 +143,7 @@ expression:
   | '(' expression ')'        { $$ = $2; }
   | '-' expression            { $$ = ast_new_unaryOperation(AST_OP_MINUS, $2); }
   | NUMBER                    { $$ = ast_new_number($1); }
-  | IDENTIFIER                { $$ = ast_new_identifier($1); }
+  | IDENTIFIER                { $$ = ast_new_identifier($1); free($1); }
   ;
 
 %%
@@ -154,5 +158,6 @@ int main(int argc, char** argv){
     yyparse();
   } while (!feof(yyin));
   fclose(yyin);
+  yyfree();
   return 0;
 }
