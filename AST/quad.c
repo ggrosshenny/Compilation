@@ -372,10 +372,10 @@ void codegen_ast_boolExpression(codegen* cg, ast* ast, symTable* symbol_table, c
     // Free codegens and quadLists objects
     codegen_keepQuadList_free(true_code);
     codegen_keepQuadList_free(false_code);
-    codegen_keepQuadList_free(bool_arg1);
     quadList_free_keepList(bool_arg1->code);
-    codegen_keepQuadList_free(bool_arg2);
+    codegen_keepQuadList_free(bool_arg1);
     quadList_free_keepList(bool_arg2->code);
+    codegen_keepQuadList_free(bool_arg2);
   }
 }
 
