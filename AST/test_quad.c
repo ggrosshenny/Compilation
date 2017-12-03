@@ -49,14 +49,34 @@ int main()
   ast* printi_call = ast_new_functionCall(printi_name, printi_args);
   ast* printi_inst = ast_new_Instruction(printi_call);
 
-  ast* printi2_name = ast_new_identifier("printi");
-  ast* printi2_argVal = ast_new_number(17);
-  ast* printi2_args = ast_new_argument(printi2_argVal);
-  ast* printi21_argVal = ast_new_number(18);
-  ast* printi21_args = ast_new_argument(printi21_argVal);
-  ast* printi2_call = ast_new_functionCall(printi2_name, ast_concat(printi2_args, printi21_args));
-  ast* printi2_inst = ast_new_Instruction(printi2_call);
-  ast* temp3 = ast_concat(printi_inst, printi2_inst);
+  // If structure
+  ast* left_or_boolExpr0 = ast_new_number(5);
+  ast* left_or_boolExpr1 = ast_new_number(4);
+  ast* left_or_boolExpr = ast_new_binaryOperation(AST_BOOL_EQ, left_or_boolExpr0, left_or_boolExpr1);
+  ast* right_or_boolExpr0 = ast_new_number(5);
+  ast* right_or_boolExpr1 = ast_new_number(4);
+  ast* right_or_boolExpr = ast_new_binaryOperation(AST_BOOL_GT, right_or_boolExpr0, right_or_boolExpr1);
+  ast* second_boolExpr = ast_new_boolExpr(right_or_boolExpr, NULL, NULL);
+  ast* first_boolExpr = ast_new_boolExpr(left_or_boolExpr, NULL, second_boolExpr);
+    // TRUE
+  ast* printi_name1 = ast_new_identifier("printi");
+  ast* printi_argVal1 = ast_new_number(1);
+  ast* printi_args1 = ast_new_argument(printi_argVal1);
+  ast* printi_call1 = ast_new_functionCall(printi_name1, printi_args1);
+  ast* true_instr = ast_new_Instruction(printi_call1);
+    // FALSE
+  ast* printi_name2 = ast_new_identifier("printi");
+  ast* printi_argVal2 = ast_new_number(0);
+  ast* printi_args2 = ast_new_argument(printi_argVal2);
+  ast* printi_call2 = ast_new_functionCall(printi_name2, printi_args2);
+  ast* false_instr = ast_new_Instruction(printi_call2);
+
+  placeGoto(first_boolExpr, true_instr, false_instr);
+  ast* if_ast =  ast_new_controlStructure(AST_IF, first_boolExpr, true_instr, false_instr);
+
+  ast* if_instr = ast_new_Instruction(if_ast);
+
+  ast* temp3 = ast_concat(printi_inst, if_instr);
 
   ast* funcID = ast_new_identifier("main");
   astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, temp3));

@@ -51,43 +51,88 @@ ast* genSymTable_ast(ast* tree, symTable* st)
     switch(tree->type)
     {
       // leafs
-      case AST_INT     :  break;
-      case AST_STR     :  break;
-      case AST_ID      :  genSymTable_const(tree, st);
-                          break;
-      // Binary operations
-      case AST_OP_ADD  :  genSymTable_binaryOperation(tree, st);
-                          break;
-      case AST_OP_SUB  :  genSymTable_binaryOperation(tree, st);
-                          break;
-      case AST_OP_MULT :  genSymTable_binaryOperation(tree, st);
-                          break;
-      case AST_OP_DIV :   genSymTable_binaryOperation(tree, st);
-                          break;
-      case AST_OP_DECL :  genSymTable_declaration(tree, st);
-                          break;
-      case AST_OP_AFCT :  genSymTable_binaryOperation(tree, st);
-                          break;
-      // Unary operations
-      case AST_OP_INCR :  genSymTable_unaryOperation(tree, st);
-                          break;
-      case AST_OP_DECR :  genSymTable_unaryOperation(tree, st);
-                          break;
-      case AST_OP_MINUS : genSymTable_unaryOperation(tree, st);
-                          break;
-      // Function
-      case AST_FUNC_DEF : genSymTable_functionDeclaration(tree, st);
-                          break;
-      case AST_FUNC_ARG : genSymTable_ast(tree->component.argumentsList.argument, st);
-                          genSymTable_ast(tree->component.argumentsList.nextArg, st);
-                          break;
-      case AST_FUNC_CALL: genSymTable_ast(tree->component.argumentsList.argument, st);
-                          genSymTable_ast(tree->component.argumentsList.nextArg, st);
-                          break;
-      case AST_FUNC_BODY: genSymTable_ast(tree->component.instructionsList.instruction, st);
-                          genSymTable_ast(tree->component.instructionsList.nextInstruction, st);
-                          break;
+      case AST_INT :
+        break;
+      case AST_STR :
+        break;
+      case AST_ID :
+        genSymTable_const(tree, st);
+        break;
 
+      // Binary operations
+      case AST_OP_ADD :
+        genSymTable_binaryOperation(tree, st);
+        break;
+      case AST_OP_SUB :
+        genSymTable_binaryOperation(tree, st);
+        break;
+      case AST_OP_MULT :
+        genSymTable_binaryOperation(tree, st);
+        break;
+      case AST_OP_DIV :
+        genSymTable_binaryOperation(tree, st);
+        break;
+      case AST_OP_DECL :
+        genSymTable_declaration(tree, st);
+        break;
+      case AST_OP_AFCT :
+        genSymTable_binaryOperation(tree, st);
+        break;
+
+      // Unary operations
+      case AST_OP_INCR :
+        genSymTable_unaryOperation(tree, st);
+        break;
+      case AST_OP_DECR :
+        genSymTable_unaryOperation(tree, st);
+        break;
+      case AST_OP_MINUS :
+        genSymTable_unaryOperation(tree, st);
+        break;
+
+      // Function
+      case AST_FUNC_DEF :
+        genSymTable_functionDeclaration(tree, st);
+        break;
+      case AST_FUNC_ARG :
+        genSymTable_ast(tree->component.argumentsList.argument, st);
+        genSymTable_ast(tree->component.argumentsList.nextArg, st);
+        break;
+      case AST_FUNC_CALL :
+        genSymTable_ast(tree->component.argumentsList.argument, st);
+        genSymTable_ast(tree->component.argumentsList.nextArg, st);
+        break;
+      case AST_FUNC_BODY :
+        genSymTable_ast(tree->component.instructionsList.instruction, st);
+        genSymTable_ast(tree->component.instructionsList.nextInstruction, st);
+        break;
+
+      // Control structure
+      case AST_IF :
+        genSymTable_ast(tree->component.boolean.boolExpr, st);
+        genSymTable_ast(tree->component.boolean.ast_true, st);
+        genSymTable_ast(tree->component.boolean.ast_false, st);
+        break;
+      case AST_GOTO :
+        genSymTable_ast(tree->component.operation.left, st);
+      case AST_BOOL_TREE :
+        genSymTable_ast(tree->component.boolean.boolExpr, st);
+        genSymTable_ast(tree->component.boolean.ast_true, st);
+        genSymTable_ast(tree->component.boolean.ast_false, st);
+        break;
+        // Binary boolean operations
+      case AST_BOOL_EQ :
+        genSymTable_binaryOperation(tree, st);
+      case AST_BOOL_NEQ :
+        genSymTable_binaryOperation(tree, st);
+      case AST_BOOL_GEQ :
+        genSymTable_binaryOperation(tree, st);
+      case AST_BOOL_LEQ :
+        genSymTable_binaryOperation(tree, st);
+      case AST_BOOL_GT :
+        genSymTable_binaryOperation(tree, st);
+      case AST_BOOL_LT :
+        genSymTable_binaryOperation(tree, st);
 
       default         :   break;
     }

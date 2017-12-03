@@ -6,12 +6,14 @@
 
 #define ST_MAX_IDENTIFIER_LENGTH 42
 #define ST_MAX_TEMPIDENTIFIER_LENGTH 48
+#define ST_MAX_LABEL_LENGTH 48
 #define ST_HASHTABLE_SIZE 4096
 
 // Dans la TDS : Number, Variable
 
 // types of values
 enum value_type{INT, STRING, ARGUMENT};
+enum labelType{TRUE, FALSE, SKIP};
 
 // ==========
 // Structures
@@ -40,6 +42,8 @@ typedef struct s_symbol
   bool isFunction;
     // Bool to know if the function takes arguments or not
   bool isVoidFunction;
+    // Bool to know if the symbol is a label
+  bool isLabel;
     // Content of the temporary
   struct
   {
@@ -56,6 +60,12 @@ typedef struct s_symTable
   symbol* table[ST_HASHTABLE_SIZE];
   // temp counter
   int nb_temp;
+  // Goto true_label counter
+  int nb_true_label;
+  // Goto false_label counter
+  int nb_false_label;
+  // Goto skip_label counter
+  int nb_skip_label;
   // Pointer to ast tree for error handling
   ast* tree;
 } symTable;
@@ -142,6 +152,14 @@ symbol* symTable_addConst(symTable* table, char* constName);
  * @param funcName name of the function
  **/
 symbol* symTable_addFunc(symTable* table, char* funcName);
+
+
+/**
+ * @brief symTable_addLabel create a new label in the table
+ * @param table symbol table
+ * @param label name of the label
+ **/
+symbol* symTable_addLabel(symTable* table, char* label, enum labelType type);
 
 
 /**

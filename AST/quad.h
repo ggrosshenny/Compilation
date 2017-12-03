@@ -53,6 +53,11 @@ quadList* quadList_init();
  **/
 quad* init_existing_quad(enum ast_type type_ast, symbol* arg_1, symbol* arg_2, symbol* result, int quadIndex);
 
+
+/**
+ * @brief quadList_print Print the given quads list
+ * @param ql quads list to print
+ **/
 void quadList_print(quadList* ql);
 
 
@@ -60,6 +65,7 @@ void quadList_print(quadList* ql);
  * @brief codegen_init Creates a new codegen pointer & returns it
  **/
 codegen* codegen_init();
+
 
 /**
  * @brief quad_free Frees the memory allocated to the quad passed as parameter
@@ -138,7 +144,6 @@ void codegen_ast_affectation(codegen* cg, enum ast_type type, codegen* left, cod
 void codegen_ast_functionBody(codegen* cg, codegen* instruction, codegen* nextInstruction, ast* ast, symTable* symbol_table);
 
 
-
 /**
  * @brief codegen_ast_functionArguments Auxiliary function for codegen_ast that generate the quads for the function arguments (when the function is called)
  * @param cg Codegen instance
@@ -155,8 +160,32 @@ void codegen_ast_functionArguments(codegen* cg, codegen* argument, codegen* next
  * @param cg Codegen instance
  * @param arguments arguments to convert to quad
  * @param identifier name of the function to call
+ * @param ast AST
+ * @param symbol_table symbol table
  **/
 void codegen_ast_functionCall(codegen* cg, codegen* arguments, codegen* identifier, ast* ast, symTable* symbol_table);
+
+
+/**
+ * @brief codegen_ast_boolExpression Auxiliary function for codegen_ast that generate the quads for the boolean expression
+ * @param cg Codegen instance
+ * @param ast AST
+ * @param symbol_table symbol table
+ * @param trueBlock_label label of the true instructions block of the control structure
+ * @param falseBlock_label label of the false instructions block of the control structure
+ **/
+void codegen_ast_boolExpression(codegen* cg, ast* ast, symTable* symbol_table, char* trueBlock_label, char* falseBlock_label);
+
+
+/**
+ * @brief codegen_ast_controlStructure Auxiliary function for codegen_ast that generate the quads for the control structure
+ * @param cg Codegen instance
+ * @param conditions Boolean expression of the control structure
+ * @param true_instruction instructions block called when the boolean expression is equal to true (false part is allocated in the function)
+ * @param ast AST
+ * @param symbol_table symbol table
+ **/
+void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* true_instruction, ast* ast, symTable* symbol_table);
 
 
 /**

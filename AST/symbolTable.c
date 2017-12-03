@@ -194,6 +194,7 @@ symbol* symTable_newTemp(symTable* table, enum value_type val_type, value val0)
   newTemp->identifier = tempName;
   newTemp->isConstant = false;
   newTemp->isFunction = false;
+  newTemp->isLabel = false;
   newTemp->content.type = val_type;
   newTemp->content.val = val0;
   symTable* test = symTable_add(table, newTemp);
@@ -215,6 +216,7 @@ symbol* symTable_addConst(symTable* table, char* constName)
   newConst->identifier = strndup(constName, ST_MAX_IDENTIFIER_LENGTH);
   newConst->isConstant = true;
   newConst->isFunction = false;
+  newConst->isLabel = false;
   temp = symTable_add(table, newConst);
   if(temp == NULL)
   {
@@ -232,10 +234,49 @@ symbol* symTable_addFunc(symTable* table, char* funcName)
   newFunc->identifier = strndup(funcName, ST_MAX_IDENTIFIER_LENGTH);
   newFunc->isConstant = false;
   newFunc->isFunction = true;
+  newFunc->isLabel = false;
   temp = symTable_add(table, newFunc);
   if(temp == NULL)
   {
       return NULL;
   }
   return newFunc;
+}
+
+
+
+symbol* symTable_addLabel(symTable* table, char* label, enum labelType type)
+{
+  symTable* temp = NULL;
+  symbol* newLabel = calloc(1, sizeof(symbol));
+
+  newLabel->identifier = calloc(ST_MAX_LABEL_LENGTH, sizeof(char));
+  newLabel->isConstant = false;
+  newLabel->isFunction = false;
+  newLabel->isLabel = true;
+
+  switch(type)
+  {
+    case TRUE:
+      snprintf(newLabel->identifier, ST_MAX_LABEL_LENGTH, "%s_%d", label, table->nb_true_label);
+      table->nb_true_label++;
+      break;
+    case FALSE:
+      snprintf(newLabel->identifier, ST_MAX_LABEL_LENGTH, "%s_%d", label, table->nb_false_label);
+      table->nb_false_label++;
+      break;
+    case SKIP:
+      snprintf(newLabel->identifier, ST_MAX_LABEL_LENGTH,"%s_%d", label, table->nb_skip_label);
+      table->nb_skip_label++;
+      break;
+  }
+
+  printf("Label : %s\n", newLabel->identifier);
+
+  temp = symTable_add(table, newLabel);
+  if(temp == NULL)
+  {
+      return NULL;
+  }
+  return newLabel;
 }

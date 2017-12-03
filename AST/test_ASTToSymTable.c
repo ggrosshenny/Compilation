@@ -42,8 +42,19 @@ int main()
 
   ast* instr1 = ast_new_Instruction(mult2);
 
+  ast* boolArg1 = ast_new_number(10);
+  ast* boolArg2 = ast_new_number(10);
+  ast* boolEq = ast_new_binaryOperation(AST_BOOL_EQ, boolArg1, boolArg2);
+  ast* true_ID = ast_new_identifier("Test");
+  ast* true_action = ast_new_unaryOperation(AST_OP_INCR, true_ID);
+  ast* false_ID = ast_new_identifier("Test");
+  ast* false_action = ast_new_unaryOperation(AST_OP_DECR, false_ID);
+  ast* bool_tree = ast_new_boolExpr(boolEq, true_action, false_action);
+  ast* instr2 = ast_new_Instruction(bool_tree);
+  ast* tempBool = ast_concat(instr2, instr1);
+
   ast* funcID = ast_new_identifier("main");
-  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(instr0, instr1));
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(instr0, tempBool));
 
   //symTable* symTableTest = symTable_init(astTest);
   symTable* symTableTest = genSymTable_init(astTest);
