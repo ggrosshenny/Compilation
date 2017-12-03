@@ -44,6 +44,9 @@
   // OPERATOR PRIORITIES
 %left '+' '-'
 %left '*' '/'
+%left EQ LEQ GEQ NOTEQ
+%left OR
+%left AND
 %left '(' ')'
 
 %%
@@ -74,22 +77,24 @@ function:
 
 function_call:
   IDENTIFIER '(' arguments_call ')' ';'                  { $$ = ast_new_functionCall(ast_new_identifier($1), $3); free($1); }
+  | IDENTIFIER '(' ')' ';'                               { $$ = ast_new_functionCall(ast_new_identifier($1), NULL); free($1); }
   ;
 
 function_declaration:
   TYPE IDENTIFIER '(' arguments_declaration ')' '{' instructions_block '}'        { $$ = ast_new_functionDefinition(ast_new_identifier($2), $4, $7); free($1); free($2); }
+  | TYPE IDENTIFIER '(' ')' '{' instructions_block '}'                            { $$ = ast_new_functionDefinition(ast_new_identifier($2), NULL, $6); free($1); free($2); }
   ;
 
 arguments_call:
   IDENTIFIER ',' arguments_call                          { $$ = ast_concat(ast_new_argument(ast_new_identifier($1)), $3); free($1); }
-  | STRING_LIT ',' arguments_call                        { $$ = ast_concat(ast_new_string($1), $3); }
+  | STRING_LIT ',' arguments_call                        { $$ = ast_concat(ast_new_argument(ast_new_string($1)), $3); free($1); }
   | IDENTIFIER                                           { $$ = ast_new_argument(ast_new_identifier($1)); free($1); }
-  | STRING_LIT                                           { $$ = ast_new_string($1);}
+  | STRING_LIT                                           { $$ = ast_new_argument(ast_new_string($1)); free($1); }
   ;
 
 arguments_declaration:
-  TYPE IDENTIFIER ',' arguments_declaration              { $$ = ast_concat(ast_new_identifier($2), $4); free($1); free($2); }
-  | TYPE IDENTIFIER                                      { $$ = ast_new_identifier($2); free($1); free($2); }
+  TYPE IDENTIFIER ',' arguments_declaration              { $$ = ast_concat(ast_new_argument(ast_new_identifier($2)), $4); free($1); free($2); }
+  | TYPE IDENTIFIER                                      { $$ = ast_new_argument(ast_new_identifier($2)); free($1); free($2); }
   ;
 
 instructions_block:
@@ -100,7 +105,7 @@ instructions_block:
 instruction:
   statement ';'            { $$ = ast_new_Instruction($1); }
   | loop                   { $$ = ast_new_Instruction($1); }
-  | function_call  ';'     { $$ = ast_new_Instruction($1); }
+  | function_call          { $$ = ast_new_Instruction($1); }
   ;
 
 loop:

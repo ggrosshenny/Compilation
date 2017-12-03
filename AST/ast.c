@@ -279,6 +279,7 @@ void ast_free(ast* tree)
                         ast_free(tree->component.operation.right);
                         free(tree);
                         break;
+    // Control structures
     case AST_GOTO     : free(tree);
                         break;
     case AST_IF       : ast_free(tree->component.boolean.boolExpr);

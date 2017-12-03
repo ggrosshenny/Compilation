@@ -7,7 +7,7 @@
 
 %}
 TYPE      int
-STRING    \"([^\"\\]|\\.)*\"
+STRING    \"([^\"]|\\.)*\"
 
 IF_KW     if
 ELSE_KW   else
