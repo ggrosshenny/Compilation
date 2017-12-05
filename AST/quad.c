@@ -340,6 +340,7 @@ void codegen_ast_boolExpression(codegen* cg, ast* ast, symTable* symbol_table, c
       // Add the TRUE instructions block
     if(ast->component.boolean.ast_true->type != AST_GOTO)
     {
+      quad_add(cg->code, AST_CREATE_LABEL, NULL, NULL, true_goto);
       cg->code = concat(cg->code, true_code->code);
     }
     else

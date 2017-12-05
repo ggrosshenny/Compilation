@@ -151,4 +151,68 @@ void genMIPS_genFunctionDeclaration(MIPS* mips, quad* qd);
 **/
 quad* genMIPS_genFunctionCall(MIPS* mips, quad* qd, symTable* st, codegen* cg);
 
+
+// ==================
+// Control structures
+
+
+/**
+* @brief genMIPS_genBranchOnEqual Generate the MIPS code for the branch on equal with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genBranchOnEqual(MIPS* mips, quad* qd);
+
+
+/**
+* @brief genMIPS_genBranchOnNotEqual Generate the MIPS code for the branch on not equal with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genBranchOnNotEqual(MIPS* mips, quad* qd);
+
+
+/**
+* @brief genMIPS_genBranchOnGreaterEqual Generate the MIPS code for the branch on greater equal with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genBranchOnGreaterEqual(MIPS* mips, quad* qd);
+
+
+/**
+* @brief genMIPS_genBranchOnlessEqual Generate the MIPS code for the branch on less equal with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genBranchOnLessEqual(MIPS* mips, quad* qd);
+
+
+/**
+* @brief genMIPS_genBranchOnGreaterThan Generate the MIPS code for the branch on greater than with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genBranchOnGreaterThan(MIPS* mips, quad* qd);
+
+
+/**
+* @brief genMIPS_genBranchOnlessThan Generate the MIPS code for the branch on less than with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genBranchOnLessThan(MIPS* mips, quad* qd);
+
+
+/**
+* @brief genMIPS_genGOTO Generate the MIPS code for the goto with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genGOTO(MIPS* mips, quad* qd);
+
+
+void genMIPS_genLabel(MIPS* mips, quad* qd);
+
+
 #endif

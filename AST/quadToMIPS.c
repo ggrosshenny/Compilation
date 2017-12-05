@@ -37,7 +37,7 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
     temp = table->table[i];
     while(temp != NULL)
     {
-      if(!temp->isConstant && !temp->isFunction)
+      if(!temp->isConstant && !temp->isFunction && !temp->isLabel)
       {
         if(temp->content.type == INT)
         {
@@ -128,6 +128,24 @@ void genMIPS_genCode(char* fileName, codegen* cg , symTable* table)
                           break;
       case AST_FUNC_CALL: ql = genMIPS_genFunctionCall(mips, ql, table, cg);
                           break;
+
+      // Control structure
+      case AST_BOOL_EQ :  genMIPS_genBranchOnEqual(mips, ql);
+                          break;
+      case AST_BOOL_NEQ:  genMIPS_genBranchOnNotEqual(mips, ql);
+                          break;
+      case AST_BOOL_GEQ:  genMIPS_genBranchOnGreaterEqual(mips, ql);
+                          break;
+      case AST_BOOL_LEQ:  genMIPS_genBranchOnLessEqual(mips, ql);
+                          break;
+      case AST_BOOL_GT :  genMIPS_genBranchOnGreaterThan(mips, ql);
+                          break;
+      case AST_BOOL_LT :  genMIPS_genBranchOnLessThan(mips, ql);
+                          break;
+      case AST_GOTO    :  genMIPS_genGOTO(mips, ql);
+                          break;
+      case AST_CREATE_LABEL: genMIPS_genLabel(mips, ql);
+                             break;
 
       default         :   break;
     }
@@ -322,11 +340,59 @@ quad* genMIPS_genFunctionCall(MIPS* mips, quad* qd, symTable* st, codegen* cg)
 }
 
 
+void genMIPS_genBranchOnEqual(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  fprintf(mips->fileMIPS, "beq\t$t0, $t1, %s\n" , qd->res->identifier);
+}
 
 
+void genMIPS_genBranchOnNotEqual(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  fprintf(mips->fileMIPS, "bne\t$t0, $t1, %s\n" , qd->res->identifier);}
 
 
+void genMIPS_genBranchOnGreaterEqual(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  fprintf(mips->fileMIPS, "bge\t$t0, $t1, %s\n" , qd->res->identifier);}
 
+
+void genMIPS_genBranchOnLessEqual(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  fprintf(mips->fileMIPS, "ble\t$t0, $t1, %s\n" , qd->res->identifier);}
+
+
+void genMIPS_genBranchOnGreaterThan(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  fprintf(mips->fileMIPS, "bgt\t$t0, $t1, %s\n" , qd->res->identifier);}
+
+
+void genMIPS_genBranchOnLessThan(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  fprintf(mips->fileMIPS, "blt\t$t0, $t1, %s\n" , qd->res->identifier);}
+
+
+void genMIPS_genGOTO(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "j\t%s\n", qd->res->identifier);
+}
+
+
+void genMIPS_genLabel(MIPS* mips, quad* qd)
+{
+  fprintf(mips->fileMIPS, "%s:\n", qd->res->identifier);
+}
 
 
 
