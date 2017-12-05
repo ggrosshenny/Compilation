@@ -13,7 +13,7 @@
 
 // types of values
 enum value_type{INT, STRING, ARGUMENT};
-enum labelType{TRUE, FALSE, SKIP};
+enum labelType{TRUE, FALSE, SKIP, LOOP};
 
 // ==========
 // Structures
@@ -66,6 +66,8 @@ typedef struct s_symTable
   int nb_false_label;
   // Goto skip_label counter
   int nb_skip_label;
+  // Goto loop_label counter
+  int nb_loop_label;
   // Pointer to ast tree for error handling
   ast* tree;
 } symTable;

@@ -65,14 +65,14 @@ int main()
   ast* printi_call1 = ast_new_functionCall(printi_name1, printi_args1);
   ast* true_instr = ast_new_Instruction(printi_call1);
     // FALSE
-  ast* printi_name2 = ast_new_identifier("printi");
-  ast* printi_argVal2 = ast_new_number(0);
-  ast* printi_args2 = ast_new_argument(printi_argVal2);
-  ast* printi_call2 = ast_new_functionCall(printi_name2, printi_args2);
-  ast* false_instr = ast_new_Instruction(printi_call2);
+  // ast* printi_name2 = ast_new_identifier("printi");
+  // ast* printi_argVal2 = ast_new_number(0);
+  // ast* printi_args2 = ast_new_argument(printi_argVal2);
+  // ast* printi_call2 = ast_new_functionCall(printi_name2, printi_args2);
+  // ast* false_instr = ast_new_Instruction(printi_call2);
 
-  placeGoto(first_boolExpr, true_instr, false_instr);
-  ast* if_ast =  ast_new_controlStructure(AST_IF, first_boolExpr, true_instr, false_instr);
+  placeGoto(first_boolExpr, true_instr, NULL);
+  ast* if_ast =  ast_new_controlStructure(AST_WHILE, first_boolExpr, true_instr, NULL);
 
   ast* if_instr = ast_new_Instruction(if_ast);
 

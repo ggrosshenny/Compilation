@@ -89,9 +89,10 @@ symTable* symTable_init(ast* tree0)
   }
   newTable->nb_temp = 0;
   newTable->tree = tree0;
-
-  // symTable_addFunc(newTable, "printf");
-  // symTable_addFunc(newTable, "printi");
+  newTable->nb_true_label = 0;
+  newTable->nb_false_label = 0;
+  newTable->nb_skip_label = 0;
+  newTable->nb_loop_label = 0;
 
   return newTable;
 }
@@ -139,14 +140,16 @@ symbol* symTable_lookUp(symTable* table, char* name)
 {
   int k_hash = hash(name);
   symbol* answ = NULL;
+  symbol* temp = table->table[k_hash];
 
-  while(table->table[k_hash] != NULL)
+  while( temp != NULL)
   {
-    answ = table->table[k_hash];
-    if(strcmp(answ->identifier, name)==0)
+    if(strcmp(temp->identifier, name)==0)
     {
+      answ = temp;
       return answ;
     }
+    temp = temp->next;
   }
   return answ;
 }
@@ -268,6 +271,10 @@ symbol* symTable_addLabel(symTable* table, char* label, enum labelType type)
     case SKIP:
       snprintf(newLabel->identifier, ST_MAX_LABEL_LENGTH,"%s_%d", label, table->nb_skip_label);
       table->nb_skip_label++;
+      break;
+    case LOOP:
+      snprintf(newLabel->identifier, ST_MAX_LABEL_LENGTH,"%s_%d", label, table->nb_loop_label);
+      table->nb_loop_label++;
       break;
   }
 

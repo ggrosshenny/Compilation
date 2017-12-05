@@ -387,13 +387,12 @@ void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* tru
   symbol* main_true_label = 0;
   symbol* main_false_label = 0;
   symbol* main_skip_label = 0;
+  symbol* main_loop_label = 0;
   // Create GOTO labels for true, false and skip jump
     // True_label_xx
   main_true_label = symTable_addLabel(symbol_table, "true_label", TRUE);
-    // True_label_xx
+    // False_label_xx
   main_false_label = symTable_addLabel(symbol_table, "false_label", FALSE);
-    // True_label_xx
-  main_skip_label = symTable_addLabel(symbol_table, "skip_label", SKIP);
 
   // Generat quads for the boolean expression
   codegen_ast_boolExpression(conditions, ast->component.boolean.boolExpr, symbol_table, main_true_label->identifier, main_false_label->identifier);
@@ -402,25 +401,58 @@ void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* tru
   true_instruction = codegen_ast(true_instruction, ast->component.boolean.ast_true, symbol_table);
 
   // Generate code for FALSE instructions block
-  false_instruction = codegen_ast(false_instruction, ast->component.boolean.ast_false, symbol_table);
+  if(ast->component.boolean.ast_false !=NULL)
+  {
+      // Skip_label_xx
+    main_skip_label = symTable_addLabel(symbol_table, "skip_label", SKIP);
+    false_instruction = codegen_ast(false_instruction, ast->component.boolean.ast_false, symbol_table);
+  }
+
+
+  // If the structure is a loop : add a label to jump back
+  if(ast->type == AST_WHILE)
+  {
+      // loop_label_xx
+    main_loop_label = symTable_addLabel(symbol_table, "loop_label", LOOP);
+    quad_add(cg->code, AST_CREATE_LABEL, NULL, NULL, main_loop_label);
+  }
 
   // Concat the codes in the good order
     // Add the boolean expression
   cg->code = concat(cg->code, conditions->code);
-    // Add the goto quad to main_false_label
-  // quad_add(cg->code, AST_GOTO, NULL, NULL, main_false_label);
+
     // Add the quad to create the main_true_label
   quad_add(cg->code, AST_CREATE_LABEL, NULL, NULL, main_true_label);
+
     // Add the TRUE instructions block
   cg->code = concat(cg->code, true_instruction->code);
+
+  if(ast->component.boolean.ast_false !=NULL)
+  {
     // Add the goto quad to main_skip_label
   quad_add(cg->code, AST_GOTO, NULL, NULL, main_skip_label);
+  }
+
+  if(ast->type == AST_WHILE)
+  {
+    quad_add(cg->code, AST_GOTO, NULL, NULL, main_loop_label);
+  }
+
     // Add the quad to create the main_false_label
   quad_add(cg->code, AST_CREATE_LABEL, NULL, NULL, main_false_label);
-    // Add the FALSE instructions block
-  cg->code = concat(cg->code, false_instruction->code);
-    // Add the quad to create the main_skip_label
-  quad_add(cg->code, AST_CREATE_LABEL, NULL, NULL, main_skip_label);
+
+
+  if(ast->component.boolean.ast_false !=NULL)
+  {
+      // Add the FALSE instructions block
+    cg->code = concat(cg->code, false_instruction->code);
+      // Add the quad to create the main_skip_label
+    quad_add(cg->code, AST_CREATE_LABEL, NULL, NULL, main_skip_label);
+  }
+  else
+  {
+    quadList_free_keepList(false_instruction->code);
+  }
 
   codegen_keepQuadList_free(false_instruction);
 }
@@ -544,6 +576,10 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         break;
 
       case AST_IF :
+        codegen_ast_controlStructure(cg, left, right, ast, symbol_table);
+        break;
+
+      case AST_WHILE :
         codegen_ast_controlStructure(cg, left, right, ast, symbol_table);
         break;
 
