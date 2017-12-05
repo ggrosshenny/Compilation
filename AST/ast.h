@@ -62,12 +62,13 @@ typedef struct s_ast
       struct s_ast* boolExpr;     // Binary operation with BOOL_. type
       struct s_ast* ast_true;     // Have to be AST_BOOL_TREE
       struct s_ast* ast_false;    // Have to be AST_BOOL_TREE
+      struct s_ast* forVarInit;      // statement
+      struct s_ast* forVarUpdate;    // Must be either an affectation, an incrementation or a decrementation
     }boolean;
     // For's specific structure
     struct
     {
-      struct s_ast* varInit;      // statement
-      struct s_ast* varUpdate;    // Must be either an affectation, an incrementation or a decrementation
+
     }forStatements;
       // Number
     int number;

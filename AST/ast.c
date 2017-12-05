@@ -125,6 +125,8 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.boolean.boolExpr, indent);
                           print_ast(tree->component.boolean.ast_true, indent);
                           print_ast(tree->component.boolean.ast_false, indent);
+                          print_ast(tree->component.boolean.forVarInit, indent);
+                          print_ast(tree->component.boolean.forVarUpdate, indent);
                           break;
       // Functions
       case AST_FUNC_DEF  :  indent++;
@@ -307,6 +309,8 @@ void ast_free(ast* tree)
     case AST_FOR      : ast_free(tree->component.boolean.boolExpr);
                         ast_free(tree->component.boolean.ast_true);
                         ast_free(tree->component.boolean.ast_false);
+                        ast_free(tree->component.boolean.forVarInit);
+                        ast_free(tree->component.boolean.forVarUpdate);
                         free(tree);
                         break;
     // Function
@@ -434,12 +438,18 @@ void placeGoto(ast* boolTree0, ast* true0, ast* false0){
 }
 
 
-ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* true0, ast* false0){
+ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* true0, ast* false0, ast* varInit0, ast* varUpdate0){
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = type;
   newAst->component.boolean.boolExpr = conditionsList0;
   newAst->component.boolean.ast_true = true0;
   newAst->component.boolean.ast_false = false0;
+
+  if(type == AST_FOR){
+    newAst->component.boolean.forVarInit = varInit0;
+    newAst->component.boolean.forVarUpdate = varUpdate0;
+  }
+
   return newAst;
 }
 

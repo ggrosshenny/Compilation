@@ -109,10 +109,12 @@ instruction:
   ;
 
 loop:
-  IF '(' conditions_list ')' '{' instructions_block '}'                                           { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_IF, $3, $6, NULL); }
-  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         { placeGoto($3, $6, $10); $$ = ast_new_controlStructure(AST_IF, $3, $6, $10); }
-  | WHILE '(' conditions_list ')' '{' instructions_block '}'                                      { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_WHILE, $3, $6, NULL); }
-  | FOR '(' statement ';' conditions_list ';' statement ')' '{' instructions_block '}'            { }
+  IF '(' conditions_list ')' '{' instructions_block '}'                                                         { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_IF, $3, $6, NULL, NULL, NULL); }
+  | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'                       { placeGoto($3, $6, $10); $$ = ast_new_controlStructure(AST_IF, $3, $6, $10, NULL, NULL); }
+  | WHILE '(' conditions_list ')' '{' instructions_block '}'                                                    { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_WHILE, $3, $6, NULL, NULL, NULL); }
+  | FOR '(' statement ';' conditions_list ';' IDENTIFIER DECR ')' '{' instructions_block '}'                    { placeGoto($5, $11, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $11, NULL, $3, ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($7))); free($7); }
+  | FOR '(' statement ';' conditions_list ';' IDENTIFIER INCR ')' '{' instructions_block '}'                    { placeGoto($5, $11, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $11, NULL, $3, ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($7))); free($7); }
+  | FOR '(' statement ';' conditions_list ';' IDENTIFIER '=' expression ')' '{' instructions_block '}'          { placeGoto($5, $12, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $12, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($7), $9)); free($7); }
   ;
 
 conditions_list:
