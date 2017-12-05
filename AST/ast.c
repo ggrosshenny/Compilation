@@ -114,6 +114,18 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.boolean.ast_true, indent);
                           print_ast(tree->component.boolean.ast_false, indent);
                           break;
+    case AST_WHILE      : indent++;
+                          printf("control structure WHILE\n");
+                          print_ast(tree->component.boolean.boolExpr, indent);
+                          print_ast(tree->component.boolean.ast_true, indent);
+                          print_ast(tree->component.boolean.ast_false, indent);
+                          break;
+    case AST_FOR        : indent++;
+                          printf("control structure FOR\n");
+                          print_ast(tree->component.boolean.boolExpr, indent);
+                          print_ast(tree->component.boolean.ast_true, indent);
+                          print_ast(tree->component.boolean.ast_false, indent);
+                          break;
       // Functions
       case AST_FUNC_DEF  :  indent++;
                             printf("Function definition\n");
@@ -283,6 +295,16 @@ void ast_free(ast* tree)
     case AST_GOTO     : free(tree);
                         break;
     case AST_IF       : ast_free(tree->component.boolean.boolExpr);
+                        ast_free(tree->component.boolean.ast_true);
+                        ast_free(tree->component.boolean.ast_false);
+                        free(tree);
+                        break;
+    case AST_WHILE    : ast_free(tree->component.boolean.boolExpr);
+                        ast_free(tree->component.boolean.ast_true);
+                        ast_free(tree->component.boolean.ast_false);
+                        free(tree);
+                        break;
+    case AST_FOR      : ast_free(tree->component.boolean.boolExpr);
                         ast_free(tree->component.boolean.ast_true);
                         ast_free(tree->component.boolean.ast_false);
                         free(tree);

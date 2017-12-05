@@ -11,12 +11,15 @@
 
 
 // Types definition
-enum ast_type{AST_INT, AST_STR, AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV,
-              AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_OP_DECL,
-              AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_BOOL_NOT, AST_BOOL_EQ,
-              AST_BOOL_NEQ, AST_BOOL_GT, AST_BOOL_GEQ, AST_BOOL_LT, AST_BOOL_LEQ,
-              AST_AND_TREE, AST_OR_TREE, AST_BOOL_TREE, AST_GOTO, AST_IF, AST_FUNC_BODY,
-              AST_ID, AST_CREATE_LABEL};
+enum ast_type{AST_INT, AST_STR, AST_ID, // Basic types
+              AST_OP_ADD, AST_OP_SUB, AST_OP_MULT, AST_OP_DIV, // Arithmetic operations
+              AST_OP_INCR, AST_OP_DECR, AST_OP_MINUS, AST_OP_AFCT, AST_OP_DECL, // Variable operations
+              AST_FUNC_CALL, AST_FUNC_DEF, AST_FUNC_ARG, AST_FUNC_BODY, // Functions
+              AST_BOOL_NOT, AST_BOOL_EQ, AST_BOOL_NEQ, AST_BOOL_GT, AST_BOOL_GEQ, // Boolean expressions
+              AST_BOOL_LT, AST_BOOL_LEQ,  //Boolean expressions
+              AST_AND_TREE, AST_OR_TREE, AST_BOOL_TREE, AST_GOTO, // Boolean structures
+              AST_IF, AST_WHILE, AST_FOR,  // Control structures
+              AST_CREATE_LABEL};
 
 // Ast definition
 typedef struct s_ast

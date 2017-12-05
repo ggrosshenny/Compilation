@@ -111,8 +111,8 @@ instruction:
 loop:
   IF '(' conditions_list ')' '{' instructions_block '}'                                           { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_IF, $3, $6, NULL); }
   | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'         { placeGoto($3, $6, $10); $$ = ast_new_controlStructure(AST_IF, $3, $6, $10); }
-  | WHILE '(' conditions_list ')' '{' instructions_block '}'                                      {}
-  | FOR '(' statement ';' conditions_list ';' statement ')' '{' instructions_block '}'            {}
+  | WHILE '(' conditions_list ')' '{' instructions_block '}'                                      { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_WHILE, $3, $6, NULL); }
+  | FOR '(' statement ';' conditions_list ';' statement ')' '{' instructions_block '}'            { }
   ;
 
 conditions_list:
