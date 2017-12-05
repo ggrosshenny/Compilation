@@ -63,6 +63,12 @@ typedef struct s_ast
       struct s_ast* ast_true;     // Have to be AST_BOOL_TREE
       struct s_ast* ast_false;    // Have to be AST_BOOL_TREE
     }boolean;
+    // For's specific structure
+    struct
+    {
+      struct s_ast* varInit;      // statement
+      struct s_ast* varUpdate;    // Must be either an affectation, an incrementation or a decrementation
+    }forStatements;
       // Number
     int number;
       // string
@@ -174,8 +180,10 @@ void placeGoto(ast* boolTree, ast* true0, ast* false0);
  * @param conditionsList0  Current boolean expression in the list
  * @param true0 Actions to be done if the control structure's result is true
  * @param false0 Actions to be done if the control structure's result is false
+ * @param varInit0 In case the control structure is a for : variable initialization
+ * @param varUpdate0 In cas the control structure is a for : variable update at each iteration
  */
-ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* true0, ast* false0);
+ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* true0, ast* false0, ast* varInit0, ast* varUpdate0);
 
 /**
  * @brief ast_new_boolExpr Create a new boolean expression
