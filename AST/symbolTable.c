@@ -278,8 +278,6 @@ symbol* symTable_addLabel(symTable* table, char* label, enum labelType type)
       break;
   }
 
-  printf("Label : %s\n", newLabel->identifier);
-
   temp = symTable_add(table, newLabel);
   if(temp == NULL)
   {

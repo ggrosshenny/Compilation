@@ -27,11 +27,10 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
   symbol* temp = NULL;
   // Open file
   mips->fileMIPS = fopen(fileName, "w+");
-  mips->headerSize = 0;
 
   // Add the table content to the data segment
   fprintf(mips->fileMIPS, "# MIPS code generated for compilation project\n# Grosshenny Guillaume and Wasmer Audric\n\n# Data section\n\t.data\n");
-  mips->headerSize += 5;
+
   for(i=0; i<ST_HASHTABLE_SIZE; i++)
   {
     temp = table->table[i];
@@ -42,19 +41,16 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
         if(temp->content.type == INT)
         {
           fprintf(mips->fileMIPS, "%s:\t.word %d\n", temp->identifier, temp->content.val.integer);
-          mips->headerSize++;
         }
         else if(temp->content.type == STRING)
         {
           fprintf(mips->fileMIPS, "%s:\t.asciiz \"%s\"\n", temp->identifier, temp->content.val.string);
-          mips->headerSize++;
         }
 
       }
       if(temp->isConstant && !temp->isFunction)
       {
         fprintf(mips->fileMIPS, "%s:\t.word 0\n", temp->identifier);
-        mips->headerSize++;
       }
 
       temp = temp->next;
@@ -62,8 +58,8 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
   } // For
 
   // Program body
+  fprintf(mips->fileMIPS, "endLine:\t.asciiz \"\\n\"\n");
   fprintf(mips->fileMIPS, "\n\n\t.text");
-  mips->headerSize+=2;
   // Library functions
     // printf
     // $(SP) : val to print
@@ -71,7 +67,6 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
   fprintf(mips->fileMIPS, "li\t$v0, 4\n");
   fprintf(mips->fileMIPS, "syscall\n");
   fprintf(mips->fileMIPS, "jr $ra\n");
-  mips->headerSize+=6;
     // printi
     // $(SP) : val to print
   fprintf(mips->fileMIPS, "\n\nprinti:\n");
@@ -79,12 +74,13 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
   fprintf(mips->fileMIPS, "move\t$a0, $t0\n");
   fprintf(mips->fileMIPS, "li\t$v0, 1\n");
   fprintf(mips->fileMIPS, "syscall\n");
+  fprintf(mips->fileMIPS, "la\t$a0, endLine\n");
+  fprintf(mips->fileMIPS, "li\t$v0, 4\n");
+  fprintf(mips->fileMIPS, "syscall\n");
   fprintf(mips->fileMIPS, "jr $ra\n");
-  mips->headerSize+=8;
 
   // Count the two blank lines before the first function definition :
   fprintf(mips->fileMIPS, "\n\n");
-  mips->headerSize += 2;
   return mips;
 }
 

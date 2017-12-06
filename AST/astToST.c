@@ -120,6 +120,18 @@ ast* genSymTable_ast(ast* tree, symTable* st)
         genSymTable_ast(tree->component.boolean.ast_true, st);
         genSymTable_ast(tree->component.boolean.ast_false, st);
         break;
+      case AST_WHILE :
+        genSymTable_ast(tree->component.boolean.boolExpr, st);
+        genSymTable_ast(tree->component.boolean.ast_true, st);
+        genSymTable_ast(tree->component.boolean.ast_false, st);
+        break;
+      case AST_FOR :
+        genSymTable_ast(tree->component.boolean.forVarInit, st);
+        genSymTable_ast(tree->component.boolean.boolExpr, st);
+        genSymTable_ast(tree->component.boolean.ast_true, st);
+        genSymTable_ast(tree->component.boolean.ast_false, st);
+        genSymTable_ast(tree->component.boolean.forVarUpdate, st);
+        break;
         // Binary boolean operations
       case AST_BOOL_EQ :
         genSymTable_binaryOperation(tree, st);

@@ -10,7 +10,6 @@
 typedef struct s_MIPS
 {
   FILE* fileMIPS;
-  int headerSize;
 }MIPS;
 
 

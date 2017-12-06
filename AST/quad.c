@@ -283,8 +283,6 @@ void codegen_ast_functionCall(codegen* cg, codegen* arguments, codegen* identifi
   cg->code = concat(cg->code, arguments->code);
   cg->result = identifier->result;
 
-  printf("id : %s\n", cg->result->identifier);
-
   if(ast->component.function.arguments != NULL)
   {
     quad_add(cg->code, AST_FUNC_CALL, NULL, NULL, cg->result);
@@ -384,6 +382,8 @@ void codegen_ast_boolExpression(codegen* cg, ast* ast, symTable* symbol_table, c
 void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* true_instruction, ast* ast, symTable* symbol_table)
 {
   codegen* false_instruction = codegen_init();
+  codegen* varInitialization;
+  codegen* varUpdate;
   symbol* main_true_label = 0;
   symbol* main_false_label = 0;
   symbol* main_skip_label = 0;
@@ -393,6 +393,15 @@ void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* tru
   main_true_label = symTable_addLabel(symbol_table, "true_label", TRUE);
     // False_label_xx
   main_false_label = symTable_addLabel(symbol_table, "false_label", FALSE);
+
+  // If the loop is a FOR loop
+  if(ast->type == AST_FOR)
+  {
+    varInitialization = codegen_init();
+    varUpdate = codegen_init();
+    codegen_ast(varInitialization, ast->component.boolean.forVarInit, symbol_table);
+    codegen_ast(varUpdate, ast->component.boolean.forVarUpdate, symbol_table);
+  }
 
   // Generat quads for the boolean expression
   codegen_ast_boolExpression(conditions, ast->component.boolean.boolExpr, symbol_table, main_true_label->identifier, main_false_label->identifier);
@@ -410,8 +419,12 @@ void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* tru
 
 
   // If the structure is a loop : add a label to jump back
-  if(ast->type == AST_WHILE)
+  if((ast->type == AST_WHILE) || (ast->type == AST_FOR))
   {
+    if(ast->type == AST_FOR)
+    {
+      cg->code = concat(cg->code, varInitialization->code);
+    }
       // loop_label_xx
     main_loop_label = symTable_addLabel(symbol_table, "loop_label", LOOP);
     quad_add(cg->code, AST_CREATE_LABEL, NULL, NULL, main_loop_label);
@@ -429,12 +442,16 @@ void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* tru
 
   if(ast->component.boolean.ast_false !=NULL)
   {
-    // Add the goto quad to main_skip_label
-  quad_add(cg->code, AST_GOTO, NULL, NULL, main_skip_label);
+      // Add the goto quad to main_skip_label
+    quad_add(cg->code, AST_GOTO, NULL, NULL, main_skip_label);
   }
 
-  if(ast->type == AST_WHILE)
+  if((ast->type == AST_WHILE) || (ast->type == AST_FOR))
   {
+    if(ast->type == AST_FOR)
+    {
+      cg->code = concat(cg->code, varUpdate->code);
+    }
     quad_add(cg->code, AST_GOTO, NULL, NULL, main_loop_label);
   }
 
@@ -455,6 +472,11 @@ void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* tru
   }
 
   codegen_keepQuadList_free(false_instruction);
+  if(ast->type == AST_FOR)
+  {
+    codegen_keepQuadList_free(varInitialization);
+    codegen_keepQuadList_free(varUpdate);
+  }
 }
 
 
@@ -545,7 +567,20 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         quadList_free_keepList(left->code);
         cg->result = left->result;
 
-        //codegen_ast_operations(cg, AST_OP_DECL, left, NULL, symbol_table);
+        break;
+
+      case AST_OP_INCR:
+        left = codegen_ast(left, ast->component.operation.left, symbol_table);
+        quadList_free_keepList(right->code);
+
+        codegen_ast_operations(cg, AST_OP_INCR, left, NULL, symbol_table);
+        break;
+
+      case AST_OP_DECR:
+        left = codegen_ast(left, ast->component.operation.left, symbol_table);
+        quadList_free_keepList(right->code);
+
+        codegen_ast_operations(cg, AST_OP_DECR, left, NULL, symbol_table);
         break;
 
       // Functions
@@ -580,6 +615,10 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         break;
 
       case AST_WHILE :
+        codegen_ast_controlStructure(cg, left, right, ast, symbol_table);
+        break;
+
+      case AST_FOR  :
         codegen_ast_controlStructure(cg, left, right, ast, symbol_table);
         break;
 

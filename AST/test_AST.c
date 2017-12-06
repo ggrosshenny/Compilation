@@ -165,7 +165,6 @@ int main()
     astTest = ast_new_functionDefinition(funcID, tempArg, ast_concat(ast_concat(temp, instr1), ast_concat(afctInstr, ast_concat(ifToInstr, ast_concat(whileInstr, forInstr)))));
 
     print_ast(astTest, 0);
-      printf("%d\n",sizeof(ast));
     ast_free(astTest);
 
     return 0;
