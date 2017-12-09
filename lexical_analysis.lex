@@ -13,6 +13,7 @@ IF_KW     if
 ELSE_KW   else
 WHILE_KW  while
 FOR_KW    for
+DEFINE    \#(define|DEFINE)
 
 NUMBER    0|([1-9][0-9]*)
 ID        [a-zA-Z_]([a-zA-Z0-9_])*
@@ -26,9 +27,12 @@ GEQ_OP    \>\=
 NOTEQ_OP  !\=
 AND_OP    \&\&
 OR_OP     \|\|
+NOT_OP  !
 
 
 %%
+
+{DEFINE}
 
 {TYPE}     { yylval.string = strdup(yytext);
              return TYPE;
@@ -59,6 +63,8 @@ OR_OP     \|\|
 {GEQ_OP}   { return GEQ; }
 
 {NOTEQ_OP} { return NOTEQ; }
+
+{NOT_OP}   { return NOT; }
 
 {AND_OP}   { return AND; }
 

@@ -3,7 +3,6 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include "AST/quadToMIPS.h"
-  #
 
   int yylex();
   void yyerror(const char*);
@@ -50,7 +49,7 @@
 %token <string> IDENTIFIER
 %token <string> TYPE
 %token <string> STRING_LIT
-%token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ AND OR
+%token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ AND OR NOT DEFINED
 
   // OPERATOR PRIORITIES
 %left '+' '-'
@@ -58,6 +57,7 @@
 %left EQ LEQ GEQ NOTEQ
 %left OR
 %left AND
+%left NOT
 %left '(' ')'
 
 %%
@@ -182,6 +182,7 @@ conditions_list:
   conditions_list AND conditions_list             { $1->component.boolean.ast_true = $3; }
     | conditions_list OR conditions_list          { $1->component.boolean.ast_false = $3; }
     | '(' conditions_list ')'                     { $$ = ast_new_boolExpr($2, NULL, NULL); }
+    | NOT conditions_list                         { $$ = ast_new_boolExpr($2, $2->component.boolean.ast_false, $2->component.boolean.ast_true); }
     | condition                                   { $$ = ast_new_boolExpr($1, NULL, NULL); }
     ;
 
@@ -227,9 +228,9 @@ expression:
   | table_access              { $$ = $1; }
   ;
 
-  table_access:
-    IDENTIFIER brackets_table           { $$ = ast_new_tableAccess(ast_new_identifier($1), $2); free($1); }
-    ;
+table_access:
+  IDENTIFIER brackets_table           { $$ = ast_new_tableAccess(ast_new_identifier($1), $2); free($1); }
+  ;
 
 %%
 

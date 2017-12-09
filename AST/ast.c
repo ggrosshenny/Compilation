@@ -104,6 +104,11 @@ void print_ast(ast* tree, int indent)
                             print_ast(tree->component.operation.left, indent);
                             print_ast(tree->component.operation.right, indent);
                             break;
+      case AST_BOOL_NOT   : indent++;
+                            printf("not\n");
+                            print_ast(tree->component.operation.left, indent);
+                            break;
+      // Control structures
       case AST_GOTO       : indent++;
                             printf("GOTO\n");
                             print_ast(tree->component.operation.left, indent);
@@ -354,6 +359,9 @@ void ast_free(ast* tree)
                         break;
     case AST_BOOL_LEQ : ast_free(tree->component.operation.left);
                         ast_free(tree->component.operation.right);
+                        free(tree);
+                        break;
+    case AST_BOOL_NOT : ast_free(tree->component.operation.left);
                         free(tree);
                         break;
     // Control structures
