@@ -61,6 +61,7 @@ void quadList_print(quadList* ql){
       case AST_FUNC_CALL: printf("\tAST_FUNC_CALL, index : %d\n", temp->index); break;
       case AST_FUNC_BODY: printf("\tAST_FUNC_BODY, index : %d\n", temp->index); break;
       case AST_FUNC_ARG : printf("\tAST_FUNC_ARG, index : %d, val : %d\n", temp->index, temp->res->content.val.integer); break;
+      case AST_TAB_AFCT : printf("\tAST_TAB_AFCT : %d, index : %d\n", temp->arg1->content.val.integer, temp->index); break;
       default         :   break;
     }
     temp = temp->next;
@@ -480,6 +481,114 @@ void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* tru
 }
 
 
+void codegen_ast_tableDeclaration(codegen* cg, ast* ast, symTable* symbol_table)
+{
+  symbol* tabSymbol = symTable_lookUp(symbol_table, ast->component.tableDeclaration.identifier->component.identifier);
+
+  if(ast->component.tableDeclaration.elements != NULL)
+  {
+    codegen_ast_tableDeclarationVal(cg, ast->component.tableDeclaration.elements, tabSymbol->content.val.dimensions, tabSymbol, symbol_table, 0);
+  }
+}
+
+
+
+
+
+void codegen_ast_tableDeclarationVal(codegen* cg, ast* elements, dims* dimensions, symbol* tabSymbol, symTable* symbol_table, int lastBlockAdr)
+{
+  dims* tempDim = dimensions->nextDim;
+  int dimVal = dimensions->currentDim;
+  int dimSizesMultiplication = 1;
+  ast* currentElem = elements;
+  codegen* valueCG = codegen_init();
+  symbol* indice = NULL;
+  value val;
+
+  // Compute dimSizesMultiplication
+  while(tempDim != NULL)
+  {
+    dimSizesMultiplication *= tempDim->currentDim;
+    tempDim = tempDim->nextDim;
+  }
+
+  // find adress for all elements in block
+  switch(currentElem->type)
+  {
+    // If the dimension is not the final one
+    case AST_TAB_BLCK :
+      for(int i=0; i<dimVal; i++)
+      {
+        codegen_ast_tableDeclarationVal(cg, currentElem->component.tableElementsBlock.elements, dimensions->nextDim, tabSymbol, symbol_table, lastBlockAdr + (i * dimSizesMultiplication));
+        currentElem = currentElem->component.tableElementsBlock.nextBlock;
+      }
+      break;
+    case AST_TAB_ELEM :
+      for(int i=0; i<dimVal; i++)
+      {
+        val.integer = (lastBlockAdr + i) * WORDSIZE;
+        codegen_ast(valueCG, currentElem->component.tableElementsList.currentElem, symbol_table);
+        indice = symTable_addTabElemAdr(symbol_table, INT, val);
+        quad_add(cg->code, AST_TAB_AFCT, indice, valueCG->result, tabSymbol);
+        currentElem = currentElem->component.tableElementsList.nextElem;
+      }
+    default :
+      break;
+  }
+
+  codegen_free(valueCG);
+}
+
+
+void codegen_ast_tableAccess(codegen* cg, ast* tree, symTable* symbol_table)
+{
+  symbol* tabSymbol = symTable_lookUp(symbol_table, tree->component.tableAccess.identifier->component.identifier);
+  symbol* elementAdrSymbol = NULL;
+  dims* dimensions = tabSymbol->content.val.dimensions;
+  ast* indices = tree->component.tableAccess.indices;
+  dims* tempDim = NULL;
+  int dimSizesMultiplication = 1;
+  int elementAdr = 0;
+  char tabAcessForMIPSUsage[256];
+  value val;
+
+  // Generate the quad
+  while(indices->component.tableDimensionsList.nextDim != NULL)
+  {
+    tempDim = dimensions->nextDim;
+    dimSizesMultiplication = 1;
+    while(tempDim != NULL)
+    {
+      dimSizesMultiplication *= tempDim->currentDim;
+      tempDim = tempDim->nextDim;
+    }
+
+    elementAdr += indices->component.tableDimensionsList.val->component.number * dimSizesMultiplication;
+
+    dimensions = dimensions ->nextDim;
+    indices = indices->component.tableDimensionsList.nextDim;
+  }
+
+  tempDim = dimensions->nextDim;
+  while(tempDim != NULL)
+  {
+    dimSizesMultiplication *= tempDim->currentDim;
+    tempDim = tempDim->nextDim;
+  }
+
+  elementAdr += indices->component.tableDimensionsList.val->component.number;
+  elementAdr *= WORDSIZE;
+
+  snprintf(tabAcessForMIPSUsage, 256, "%d(%s)", elementAdr, tabSymbol->identifier);
+  val.string = tabAcessForMIPSUsage;
+  printf("Element adr : %s\n", tabAcessForMIPSUsage);
+  elementAdrSymbol = symTable_addTabElemAdr(symbol_table, STRING, val);
+  cg->result = elementAdrSymbol;
+
+}
+
+
+
 codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
   codegen* left = codegen_init();
@@ -620,6 +729,19 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
       case AST_FOR  :
         codegen_ast_controlStructure(cg, left, right, ast, symbol_table);
+        break;
+
+      // Table
+      case AST_TAB_DECL :
+        codegen_ast_tableDeclaration(cg, ast, symbol_table);
+        quadList_free_keepList(right->code);
+        quadList_free_keepList(left->code);
+        break;
+
+      case AST_TAB_ACSS :
+        codegen_ast_tableAccess(cg, ast, symbol_table);
+        quadList_free_keepList(right->code);
+        quadList_free_keepList(left->code);
         break;
 
       default:

@@ -116,13 +116,58 @@ int main()
 
   ast* temp5 = ast_concat(temp4, printFor_instr);
 
-  ast* funcID = ast_new_identifier("main");
-  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, temp5));
+  // Table test
 
-  symTable* symTableTest = genSymTable_init(astTest);
-  genSymTable_ast(astTest, symTableTest);
+    // ID
+  ast* tabId = ast_new_identifier("tab");
+    // Dimensions
+  ast* dim1 = ast_new_tabDimension(ast_new_number(2));
+  ast* dim2 = ast_new_tabDimension(ast_new_number(3));
+  ast* tabDim = ast_concat(dim1, dim2);
+    // Elements
+  //first block
+  ast* elem00 = ast_new_tabElements(ast_new_number(0));
+  ast* elem01 = ast_new_tabElements(ast_new_number(1));
+  ast* temp_elem0 = ast_concat(elem00, elem01);
+  ast* elem02 = ast_new_tabElements(ast_new_number(2));
+  ast* temp_elem1 = ast_concat(temp_elem0, elem02);
+  ast* tabBlock0 = ast_new_tableElementsBlock(temp_elem1);
+  // Second block
+  ast* elem10 = ast_new_tabElements(ast_new_number(10));
+  ast* elem11 = ast_new_tabElements(ast_new_number(11));
+  ast* temp_elem3 = ast_concat(elem10, elem11);
+  ast* elem12 = ast_new_tabElements(ast_new_number(12));
+  ast* temp_elem4 = ast_concat(temp_elem3, elem12);
+  ast* tabBlock1 = ast_new_tableElementsBlock(temp_elem4);
+  ast* tabElem = ast_concat(tabBlock0, tabBlock1);
+    // AST table declaration
+  ast* tabDecl = ast_new_tabDeclaration(tabId, tabDim, tabElem);
+  ast* tabInstr = ast_new_Instruction(tabDecl);
+
+  ast* temp6 = ast_concat(temp5, tabInstr);
+
+  // Table access test
+    // ID
+  ast* tabIdA = ast_new_identifier("tab");
+    // Dimensions
+  ast* dim1A = ast_new_tabDimension(ast_new_number(1));
+  ast* dim2A = ast_new_tabDimension(ast_new_number(2));
+  ast* tabDimA = ast_concat(dim1A, dim2A);
+
+  ast* tabAcc = ast_new_tableAccess(tabIdA, tabDimA);
+  ast* tabAccAffId = ast_new_identifier("test");
+  ast* tabAccAfct = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, tabAccAffId), tabAcc);
+  ast* tabAccInstr = ast_new_Instruction(tabAccAfct);
+
+  ast* tempTableOp = ast_concat(temp6, tabAccInstr);
+
+  ast* funcID = ast_new_identifier("main");
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, tempTableOp));
 
   print_ast(astTest, 0);
+
+  symTable* symTableTest = genSymTable_init(astTest);
+
   codegen* cgBis = codegen_init();
   cgBis = codegen_ast(cgBis, astTest, symTableTest);
   quadList_print(cgBis->code);

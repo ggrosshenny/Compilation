@@ -361,7 +361,6 @@ ast* genSymTable_tableDeclaration(ast* tree, symTable* st)
 
     // Initialize the list of dimensions of the table
     dimSize = tableDimensions->component.tableDimensionsList.val->component.number;
-    printf("Dim size : %d\n", dimSize);
     newDim = genSymTable_aux_newDim(dimSize);
     tempId->content.val.dimensions = newDim;
     totalSize+=dimSize;
@@ -373,7 +372,6 @@ ast* genSymTable_tableDeclaration(ast* tree, symTable* st)
       // construire liste chainée d'arguments
       lastDim = newDim;
       dimSize = tableDimensions->component.tableDimensionsList.val->component.number;
-      printf("Dim size : %d\n", dimSize);
       newDim = genSymTable_aux_newDim(dimSize);
       totalSize+=dimSize;
 
@@ -396,7 +394,6 @@ ast* genSymTable_tableDeclaration(ast* tree, symTable* st)
 
 bool checkElementsNumberInTableDeclaration(dims* dimensions, ast* elementsBlock, symTable* st)
 {
-  printf("La dimension est de taille %d\n", dimensions->currentDim);
   if((dimensions == NULL) && (elementsBlock == NULL))
   {
     return true;
@@ -431,7 +428,6 @@ bool checkElementsNumberInTableDeclaration(dims* dimensions, ast* elementsBlock,
     nbElementOnDimension++;
   }
 
-  printf("Il y a %d elems sur %d\n", nbElementOnDimension, dimensions->currentDim);
   return answ && (nbElementOnDimension == dimensions->currentDim);
 }
 

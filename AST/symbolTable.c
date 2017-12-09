@@ -59,6 +59,17 @@ void symbol_printList(symbol* symbolList)
         }
         printf("\n");
       }
+      else if(temp->isTabElemAdr)
+      {
+        if(temp->content.type == INT)
+        {
+          printf("\ttabElemAdr\t%d\n", temp->content.val.integer);
+        }
+        if(temp->content.type == STRING)
+        {
+          printf("\ttabElemAdr\t%s\n", temp->content.val.string);
+        }
+      }
       else
       {
         if(temp->content.type == INT)
@@ -105,6 +116,7 @@ symTable* symTable_init(ast* tree0)
   newTable->nb_false_label = 0;
   newTable->nb_skip_label = 0;
   newTable->nb_loop_label = 0;
+  newTable->nb_tabElemAdr = 0;
 
   return newTable;
 }
@@ -223,6 +235,7 @@ symbol* symTable_newTemp(symTable* table, enum value_type val_type, value val0)
   newTemp->isFunction = false;
   newTemp->isTable = false;
   newTemp->isLabel = false;
+  newTemp->isTabElemAdr = false;
   newTemp->content.type = val_type;
   newTemp->content.val = val0;
   symTable* test = symTable_add(table, newTemp);
@@ -246,6 +259,7 @@ symbol* symTable_addConst(symTable* table, char* constName)
   newConst->isFunction = false;
   newConst->isTable = false;
   newConst->isLabel = false;
+  newConst->isTabElemAdr = false;
   temp = symTable_add(table, newConst);
   if(temp == NULL)
   {
@@ -265,6 +279,7 @@ symbol* symTable_addFunc(symTable* table, char* funcName)
   newFunc->isFunction = true;
   newFunc->isTable = false;
   newFunc->isLabel = false;
+  newFunc->isTabElemAdr = false;
   temp = symTable_add(table, newFunc);
   if(temp == NULL)
   {
@@ -284,6 +299,7 @@ symbol* symTable_addTable(symTable* table, char* tabId)
   newTab->isFunction = false;
   newTab->isTable = true;
   newTab->isLabel = false;
+  newTab->isTabElemAdr = false;
   temp = symTable_add(table, newTab);
   if(temp == NULL)
   {
@@ -304,6 +320,7 @@ symbol* symTable_addLabel(symTable* table, char* label, enum labelType type)
   newLabel->isFunction = false;
   newLabel->isTable = false;
   newLabel->isLabel = true;
+  newLabel->isTabElemAdr = false;
 
   switch(type)
   {
@@ -331,4 +348,29 @@ symbol* symTable_addLabel(symTable* table, char* label, enum labelType type)
       return NULL;
   }
   return newLabel;
+}
+
+
+symbol* symTable_addTabElemAdr(symTable* table, enum value_type val_type, value val0)
+{
+  symTable* temp = NULL;
+  symbol* newTabElemAdr = calloc(1, sizeof(symbol));
+
+  newTabElemAdr->identifier = calloc(ST_MAX_LABEL_LENGTH, sizeof(char));
+  snprintf(newTabElemAdr->identifier, ST_MAX_LABEL_LENGTH,"tabElemAdr_%d", table->nb_tabElemAdr);
+  table->nb_tabElemAdr++;
+  newTabElemAdr->isConstant = false;
+  newTabElemAdr->isFunction = false;
+  newTabElemAdr->isTable = false;
+  newTabElemAdr->isLabel = false;
+  newTabElemAdr->isTabElemAdr = true;
+  newTabElemAdr->content.type = val_type;
+  newTabElemAdr->content.val = val0;
+
+  temp = symTable_add(table, newTabElemAdr);
+  if(temp == NULL)
+  {
+      return NULL;
+  }
+  return newTabElemAdr;
 }

@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-//#include "../AST/ast.h"
-//#include "../AST/symbolTable.h"
-#include "../AST/astToST.h"
+#include "astToST.h"
+
+// Defines
+
+#define WORDSIZE 4
 
 // Quad definition
 typedef struct s_quad {
@@ -186,6 +188,36 @@ void codegen_ast_boolExpression(codegen* cg, ast* ast, symTable* symbol_table, c
  * @param symbol_table symbol table
  **/
 void codegen_ast_controlStructure(codegen* cg, codegen* conditions, codegen* true_instruction, ast* ast, symTable* symbol_table);
+
+
+/**
+ * @brief codegen_ast_tableDeclaration Auxiliary function for codegen_ast that generate the quads for the table declaration
+ * @param cg Codegen instance
+ * @param ast AST
+ * @param symbol_table symbol table
+ **/
+void codegen_ast_tableDeclaration(codegen* cg, ast* ast, symTable* symbol_table);
+
+
+/**
+ * @brief codegen_ast_tableDeclarationVal Auxiliary function to generate quads for elements affectations for the given table dimension after dimension
+ * @param cg Codegen instance
+ * @param elements AST of the elements of the table of the current dimension
+ * @param dimensions table dimensions after the current dimension
+ * @param tabSymbol symbol that represents the table in symbol table
+ * @param symbol_table symbol table
+ * @param lastBlockAdr adr of the last block
+ **/
+void codegen_ast_tableDeclarationVal(codegen* cg, ast* elements, dims* dimensions, symbol* tabSymbol, symTable* symbol_table, int lastBlockAdr);
+
+
+/**
+ * @brief codegen_ast_tableAccess Auxiliary function for codegen_ast that generate the symbol for the table element access
+ * @param cg Codegen instance
+ * @param ast AST
+ * @param symbol_table symbol table
+ **/
+void codegen_ast_tableAccess(codegen* cg, ast* tree, symTable* symbol_table);
 
 
 /**

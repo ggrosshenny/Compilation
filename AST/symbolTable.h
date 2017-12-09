@@ -54,6 +54,8 @@ typedef struct s_symbol
   bool isTable;
     // Bool to know if the symbol is a label
   bool isLabel;
+    // Bool to know if the symbol is a table indices
+  bool isTabElemAdr;
     // Content of the temporary
   struct
   {
@@ -78,6 +80,8 @@ typedef struct s_symTable
   int nb_skip_label;
   // Goto loop_label counter
   int nb_loop_label;
+  // TabElemAdr counter
+  int nb_tabElemAdr;
   // Pointer to ast tree for error handling
   ast* tree;
 } symTable;
@@ -180,6 +184,14 @@ symbol* symTable_addTable(symTable* table, char* tabId);
  * @param label name of the label
  **/
 symbol* symTable_addLabel(symTable* table, char* label, enum labelType type);
+
+
+/**
+ * @brief symTable_addTabElemAdr create a new table in the table
+ * @param table symbol table
+ * @param elemAdr adress of the table element
+ **/
+symbol* symTable_addTabElemAdr(symTable* table, enum value_type val_type, value val0);
 
 
 /**
