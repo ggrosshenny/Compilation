@@ -18,18 +18,26 @@ enum labelType{TRUE, FALSE, SKIP, LOOP};
 // ==========
 // Structures
 
-
+// Function arguments
 typedef struct s_args
 {
   struct s_symbol* currentArg;
   struct s_args* nextArg;
 }args;
 
+// Table dimensions
+typedef struct s_dimensions
+{
+  int currentDim;
+  struct s_dimensions* nextDim;
+}dims;
+
 typedef union u_value
 {
   int integer;
   char* string;
   args* arguments;
+  dims* dimensions;
 }value;
 
 typedef struct s_symbol
@@ -42,6 +50,8 @@ typedef struct s_symbol
   bool isFunction;
     // Bool to know if the function takes arguments or not
   bool isVoidFunction;
+    // Bool to know if the symbol is a table
+  bool isTable;
     // Bool to know if the symbol is a label
   bool isLabel;
     // Content of the temporary
@@ -154,6 +164,14 @@ symbol* symTable_addConst(symTable* table, char* constName);
  * @param funcName name of the function
  **/
 symbol* symTable_addFunc(symTable* table, char* funcName);
+
+
+/**
+ * @brief symTable_addTable create a new table in the table
+ * @param table symbol table
+ * @param tabId name of the table
+ **/
+symbol* symTable_addTable(symTable* table, char* tabId);
 
 
 /**

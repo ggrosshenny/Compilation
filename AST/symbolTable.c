@@ -27,6 +27,7 @@ void symbol_printList(symbol* symbolList)
 {
   symbol* temp = symbolList;
   args* tempArg = NULL;
+  dims* tempDim = NULL;
   while(temp != NULL)
   {
       if(temp->isConstant)
@@ -44,6 +45,17 @@ void symbol_printList(symbol* symbolList)
             printf(" - %s", tempArg->currentArg->identifier);
             tempArg = tempArg->nextArg;
           }
+        }
+        printf("\n");
+      }
+      else if(temp->isTable)
+      {
+        printf("\t%s\ttable", temp->identifier);
+        tempDim = temp->content.val.dimensions;
+        while(tempDim != NULL)
+        {
+          printf(" - %d", tempDim->currentDim);
+          tempDim = tempDim->nextDim;
         }
         printf("\n");
       }
@@ -112,6 +124,8 @@ void symTable_free(symTable* table)
   symbol* temp = NULL;
   args* arg = NULL;
   args* tempArg = NULL;
+  dims* dimensions = NULL;
+  dims* tempDim = NULL;
   for(i=0; i<ST_HASHTABLE_SIZE; i++)
   {
       current = table->table[i];
@@ -127,6 +141,16 @@ void symTable_free(symTable* table)
             tempArg = arg;
             arg = arg->nextArg;
             free(tempArg);
+          }
+        }
+        else if(temp->isTable)
+        {
+          dimensions = temp->content.val.dimensions;
+          while(dimensions != NULL)
+          {
+            tempDim = dimensions;
+            dimensions = dimensions->nextDim;
+            free(tempDim);
           }
         }
         symbol_free(temp);
@@ -197,6 +221,7 @@ symbol* symTable_newTemp(symTable* table, enum value_type val_type, value val0)
   newTemp->identifier = tempName;
   newTemp->isConstant = false;
   newTemp->isFunction = false;
+  newTemp->isTable = false;
   newTemp->isLabel = false;
   newTemp->content.type = val_type;
   newTemp->content.val = val0;
@@ -219,6 +244,7 @@ symbol* symTable_addConst(symTable* table, char* constName)
   newConst->identifier = strndup(constName, ST_MAX_IDENTIFIER_LENGTH);
   newConst->isConstant = true;
   newConst->isFunction = false;
+  newConst->isTable = false;
   newConst->isLabel = false;
   temp = symTable_add(table, newConst);
   if(temp == NULL)
@@ -231,12 +257,13 @@ symbol* symTable_addConst(symTable* table, char* constName)
 
 symbol* symTable_addFunc(symTable* table, char* funcName)
 {
-  // Create the new constant
+  // Create the new function
   symTable* temp = NULL;
   symbol* newFunc = calloc(1, sizeof(symbol));
   newFunc->identifier = strndup(funcName, ST_MAX_IDENTIFIER_LENGTH);
   newFunc->isConstant = false;
   newFunc->isFunction = true;
+  newFunc->isTable = false;
   newFunc->isLabel = false;
   temp = symTable_add(table, newFunc);
   if(temp == NULL)
@@ -244,6 +271,25 @@ symbol* symTable_addFunc(symTable* table, char* funcName)
       return NULL;
   }
   return newFunc;
+}
+
+
+symbol* symTable_addTable(symTable* table, char* tabId)
+{
+  // Create the new table
+  symTable* temp = NULL;
+  symbol* newTab = calloc(1, sizeof(symbol));
+  newTab->identifier = strndup(tabId, ST_MAX_IDENTIFIER_LENGTH);
+  newTab->isConstant = false;
+  newTab->isFunction = false;
+  newTab->isTable = true;
+  newTab->isLabel = false;
+  temp = symTable_add(table, newTab);
+  if(temp == NULL)
+  {
+      return NULL;
+  }
+  return newTab;
 }
 
 
@@ -256,6 +302,7 @@ symbol* symTable_addLabel(symTable* table, char* label, enum labelType type)
   newLabel->identifier = calloc(ST_MAX_LABEL_LENGTH, sizeof(char));
   newLabel->isConstant = false;
   newLabel->isFunction = false;
+  newLabel->isTable = false;
   newLabel->isLabel = true;
 
   switch(type)

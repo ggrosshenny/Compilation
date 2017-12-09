@@ -80,7 +80,7 @@ typedef struct s_ast
       // Table elements
     struct
     {
-      struct s_ast* currentElem;  // Have to be AST_NUM or AST_TAB_DECL
+      struct s_ast* currentElem;  // Have to be AST_NUM or AST_TAB_BLCK
       struct s_ast* nextElem;     // Have to be AST_TAB_ELEM
     }tableElementsList;
     struct

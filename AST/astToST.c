@@ -135,16 +135,41 @@ ast* genSymTable_ast(ast* tree, symTable* st)
         // Binary boolean operations
       case AST_BOOL_EQ :
         genSymTable_binaryOperation(tree, st);
+        break;
       case AST_BOOL_NEQ :
         genSymTable_binaryOperation(tree, st);
+        break;
       case AST_BOOL_GEQ :
         genSymTable_binaryOperation(tree, st);
+        break;
       case AST_BOOL_LEQ :
         genSymTable_binaryOperation(tree, st);
+        break;
       case AST_BOOL_GT :
         genSymTable_binaryOperation(tree, st);
+        break;
       case AST_BOOL_LT :
         genSymTable_binaryOperation(tree, st);
+        break;
+        // Table
+      case AST_TAB_DECL :
+        genSymTable_tableDeclaration(tree, st);
+        break;
+      case AST_TAB_DIM :
+        genSymTable_ast(tree->component.tableDimensionsList.val, st);
+        genSymTable_ast(tree->component.tableDimensionsList.nextDim, st);
+        break;
+      case AST_TAB_BLCK :
+        genSymTable_ast(tree->component.tableElementsBlock.elements, st);
+        genSymTable_ast(tree->component.tableElementsBlock.nextBlock, st);
+        break;
+      case AST_TAB_ELEM :
+        genSymTable_ast(tree->component.tableElementsList.currentElem, st);
+        genSymTable_ast(tree->component.tableElementsList.nextElem, st);
+        break;
+      case AST_TAB_ACSS :
+        genSymTable_tableAccess(tree, st);
+        break;
 
       default         :   break;
     }
@@ -223,11 +248,20 @@ ast* genSymTable_functionDeclaration(ast* tree, symTable* st)
   char* argName;
   int nb_arguments = 0;
 
+  if(symTable_lookUp(st, funcIndentifier->component.identifier) != NULL)
+  {
+    char msg[MAX_IDENTIFIER_LENGHT+250];
+    snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : function %s was already declared !\n", funcIndentifier->component.identifier);
+    genSymTable_error(msg, st->tree, st);
+  }
+
   genSymTable_ast(funcIndentifier, st);
   symbol* tempId = symTable_lookUp(st, funcIndentifier->component.identifier);
   tempId->isFunction = true;
   tempId->isConstant = false;
   tempId->isVoidFunction = true;
+  tempId->isTable = false;
+  tempId->isLabel = false;
   genSymTable_ast(tree->component.function.arguments, st);
   genSymTable_ast(tree->component.function.body, st);
 
@@ -286,6 +320,184 @@ ast* genSymTable_functionCall(ast* tree, symTable* st)
   genSymTable_ast(identifier, st);
   genSymTable_ast(tree->component.function.arguments, st);
   genSymTable_ast(tree->component.function.body, st);
+
+  return tree;
+}
+
+
+ast* genSymTable_tableDeclaration(ast* tree, symTable* st)
+{
+  ast* identifier = tree->component.tableDeclaration.identifier;
+  ast* tableDimensions = NULL;
+  symbol* tempId = NULL;
+  dims* newDim = NULL;
+  dims* lastDim = NULL;
+  int dimSize = 0;
+  int totalSize = 0;
+
+  if(symTable_lookUp(st, identifier->component.identifier) != NULL)
+  {
+    char msg[MAX_IDENTIFIER_LENGHT+250];
+    snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : table %s was already declared !\n", identifier->component.identifier);
+    genSymTable_error(msg, st->tree, st);
+  }
+
+  genSymTable_ast(identifier, st);
+  tempId = symTable_lookUp(st, identifier->component.identifier);
+  tempId->isFunction = false;
+  tempId->isConstant = false;
+  tempId->isVoidFunction = false;
+  tempId->isTable = true;
+  tempId->isLabel = false;
+  genSymTable_ast(tree->component.tableDeclaration.dimensions, st);
+
+  // Table elements
+  if(tree->component.tableDeclaration.elements != NULL)
+  {
+    genSymTable_ast(tree->component.tableDeclaration.elements, st);
+
+    // table dimensions verifications
+    tableDimensions = tree->component.tableDeclaration.dimensions;
+
+    // Initialize the list of dimensions of the table
+    dimSize = tableDimensions->component.tableDimensionsList.val->component.number;
+    printf("Dim size : %d\n", dimSize);
+    newDim = genSymTable_aux_newDim(dimSize);
+    tempId->content.val.dimensions = newDim;
+    totalSize+=dimSize;
+
+    // Get all dimensions
+    tableDimensions = tableDimensions->component.tableDimensionsList.nextDim;
+    while( tableDimensions != NULL)
+    {
+      // construire liste chainée d'arguments
+      lastDim = newDim;
+      dimSize = tableDimensions->component.tableDimensionsList.val->component.number;
+      printf("Dim size : %d\n", dimSize);
+      newDim = genSymTable_aux_newDim(dimSize);
+      totalSize+=dimSize;
+
+      lastDim->nextDim = newDim;
+      tableDimensions = tableDimensions->component.tableDimensionsList.nextDim;
+    }
+
+    // Verify if all elements blocks are of the right dimension
+    if(!checkElementsNumberInTableDeclaration(tempId->content.val.dimensions, tree->component.tableDeclaration.elements, st))
+    {
+      char msg[MAX_IDENTIFIER_LENGHT+250];
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : table %s has the wrong elements number in its declaration !\n", identifier->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+  }
+
+  return tree;
+}
+
+
+bool checkElementsNumberInTableDeclaration(dims* dimensions, ast* elementsBlock, symTable* st)
+{
+  printf("La dimension est de taille %d\n", dimensions->currentDim);
+  if((dimensions == NULL) && (elementsBlock == NULL))
+  {
+    return true;
+  }
+  if( ((dimensions == NULL) && (elementsBlock != NULL)) || ((dimensions != NULL) && (elementsBlock == NULL)) )
+  {
+    return false;
+  }
+  int nbElementOnDimension = 0;
+  bool answ = true;
+  char msg[MAX_IDENTIFIER_LENGHT+250];
+  // Recursion end condition
+  ast* currentElem = elementsBlock;
+
+  while(currentElem != NULL)
+  {
+    // If the current dimension is not the final dimension
+    switch(elementsBlock->type)
+    {
+      case AST_TAB_BLCK :
+        answ = answ && checkElementsNumberInTableDeclaration(dimensions->nextDim, currentElem->component.tableElementsBlock.elements, st);
+        currentElem = currentElem->component.tableElementsBlock.nextBlock;
+        break;
+      case AST_TAB_ELEM :
+        currentElem = currentElem->component.tableElementsList.nextElem;
+        break;
+      default :
+        snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : wrong type in table elements declaration !\n");
+        genSymTable_error(msg, st->tree, st);
+        break;
+    }
+    nbElementOnDimension++;
+  }
+
+  printf("Il y a %d elems sur %d\n", nbElementOnDimension, dimensions->currentDim);
+  return answ && (nbElementOnDimension == dimensions->currentDim);
+}
+
+
+dims* genSymTable_aux_newDim(int value)
+{
+  dims* newDim = calloc(1, sizeof(dims));
+  newDim->currentDim = value;
+  newDim->nextDim = NULL;
+
+  return newDim;
+}
+
+
+ast* genSymTable_tableAccess(ast* tree, symTable* st)
+{
+  char msg[MAX_IDENTIFIER_LENGHT+250];
+  ast* identifier = tree->component.tableAccess.identifier;
+  ast* indices = tree->component.tableAccess.indices;
+  symbol* tempTableAccess = NULL;
+  symbol* tempSmbl = NULL;
+  dims* tempDim = NULL;
+  int currentIndice = 0;
+
+  if((tempTableAccess = symTable_lookUp(st, identifier->component.identifier)) == NULL)
+  {
+    snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : table %s was not declared before use !\n", identifier->component.identifier);
+    genSymTable_error(msg, st->tree, st);
+  }
+
+  // indices verification
+  genSymTable_ast(indices, st);
+
+  tempDim = tempTableAccess->content.val.dimensions;
+  while(indices != NULL)
+  {
+    switch(indices->component.tableDimensionsList.val->type)
+    {
+      case AST_INT :
+        currentIndice = indices->component.tableDimensionsList.val->component.number;
+        break;
+      case AST_ID :
+        // tempSmbl can not be NULL (verified by genSymTable_ast before)
+        tempSmbl = symTable_lookUp(st, indices->component.tableDimensionsList.val->component.identifier);
+        currentIndice = tempSmbl->content.val.integer;
+        break;
+      default :
+        snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : wrong type in table elements declaration !\n");
+        genSymTable_error(msg, st->tree, st);
+        break;
+    }
+
+    if((tempDim == NULL))
+    {
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : table %s has an invalid number of indices !\n", identifier->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+
+    if((currentIndice < 0) || (currentIndice >= tempDim->currentDim))
+    {
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : table %s has an invalid indices !\n", identifier->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+    indices = indices->component.tableDimensionsList.nextDim;
+    tempDim = tempDim->nextDim;
+  }
 
   return tree;
 }

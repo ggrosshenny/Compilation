@@ -85,6 +85,39 @@ ast* genSymTable_functionCall(ast* tree, symTable* st);
 
 
 /**
+ * @brief genSymTable_tableDeclaration generate the symbol table from the given AST for an table declaration
+ * @param tree AST
+ * @param st symbol table
+ **/
+ast* genSymTable_tableDeclaration(ast* tree, symTable* st);
+
+
+/**
+ * @brief genSymTable_aux_newDim generate dimension object with the given value
+ * @param value
+ **/
+dims* genSymTable_aux_newDim(int value);
+
+
+/**
+ * @brief checkElementsNumberInTableDeclaration check if the number elements of the
+ *  table declaration does not exceed the table dimensions
+ * @param dimensions table dimensions
+ * @param elementsBlock blocks of elements of the table
+ **/
+bool checkElementsNumberInTableDeclaration(dims* dimensions, ast* elementsBlock, symTable* st);
+
+
+/**
+ * @brief genSymTable_tableAccess generate the symbol table from the given AST for an table access
+ * @param tree AST
+ * @param st symbol table
+ **/
+ast* genSymTable_tableAccess(ast* tree, symTable* st);
+
+
+
+/**
  * @brief genSymTable_newTemp create the newTemp int the symbol table and change the temporary variable by the symbol identifier
  * @param tree AST
  * @param st symbol table

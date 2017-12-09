@@ -53,8 +53,48 @@ int main()
   ast* instr2 = ast_new_Instruction(bool_tree);
   ast* tempBool = ast_concat(instr2, instr1);
 
+    // ID
+  ast* tabId = ast_new_identifier("tab");
+    // Dimensions
+  ast* dim1 = ast_new_tabDimension(ast_new_number(2));
+  ast* dim2 = ast_new_tabDimension(ast_new_number(3));
+  ast* tabDim = ast_concat(dim1, dim2);
+   // Elements
+  //first block
+  ast* elem00 = ast_new_tabElements(ast_new_number(0));
+  ast* elem01 = ast_new_tabElements(ast_new_number(1));
+  ast* temp_elem0 = ast_concat(elem00, elem01);
+  ast* elem02 = ast_new_tabElements(ast_new_number(2));
+  ast* temp_elem1 = ast_concat(temp_elem0, elem02);
+  ast* tabBlock0 = ast_new_tableElementsBlock(temp_elem1);
+  // Second block
+  ast* elem10 = ast_new_tabElements(ast_new_number(10));
+  ast* elem11 = ast_new_tabElements(ast_new_number(11));
+  ast* temp_elem3 = ast_concat(elem10, elem11);
+  ast* elem12 = ast_new_tabElements(ast_new_number(12));
+  ast* temp_elem4 = ast_concat(temp_elem3, elem12);
+  ast* tabBlock1 = ast_new_tableElementsBlock(temp_elem4);
+  ast* tabElem = ast_concat(tabBlock0, tabBlock1);
+    // AST table declaration
+  ast* tabDecl = ast_new_tabDeclaration(tabId, tabDim, tabElem);
+  ast* tabInstr = ast_new_Instruction(tabDecl);
+  ast* tempTable = ast_concat(tempBool, tabInstr);
+
+  // Table access test
+    // ID
+  ast* tabIdA = ast_new_identifier("tab");
+    // Dimensions
+  ast* dim1A = ast_new_tabDimension(ast_new_number(1));
+  ast* dim2A = ast_new_tabDimension(ast_new_number(2));
+  ast* tabDimA = ast_concat(dim1A, dim2A);
+
+  ast* tabAcc = ast_new_tableAccess(tabIdA, tabDimA);
+  ast* tabAccInstr = ast_new_Instruction(tabAcc);
+
+  ast* tempTableOp = ast_concat(tempTable, tabAccInstr);
+
   ast* funcID = ast_new_identifier("main");
-  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(instr0, tempBool));
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(instr0, tempTableOp));
 
   //symTable* symTableTest = symTable_init(astTest);
   symTable* symTableTest = genSymTable_init(astTest);

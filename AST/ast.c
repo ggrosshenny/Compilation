@@ -173,7 +173,7 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.tableElementsBlock.nextBlock, --indent);
                           break;
       case AST_TAB_ELEM:  indent++;
-                          printf("Element");
+                          printf("Element\n");
                           print_ast(tree->component.tableElementsList.currentElem, indent);
                           print_ast(tree->component.tableElementsList.nextElem, --indent);
                           break;
