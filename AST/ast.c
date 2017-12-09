@@ -307,10 +307,20 @@ void ast_free(ast* tree)
                         free(tree);
                         break;
     // Unary operations
-    case AST_OP_INCR  : ast_free(tree->component.operation.left);
+    case AST_OP_INCR  : if(tree->component.operation.left->type != AST_TAB_ACSS)
+                          ast_free(tree->component.operation.left);
+                        else{
+                          ast_free(tree->component.operation.left->component.tableAccess.identifier);
+                          free(tree->component.operation.left);
+                        }
                         free(tree);
                         break;
-    case AST_OP_DECR  : ast_free(tree->component.operation.left);
+    case AST_OP_DECR  : if(tree->component.operation.left->type != AST_TAB_ACSS)
+                          ast_free(tree->component.operation.left);
+                        else{
+                          ast_free(tree->component.operation.left->component.tableAccess.identifier);
+                          free(tree->component.operation.left);
+                        }
                         free(tree);
                         break;
     case AST_OP_MINUS : ast_free(tree->component.operation.left);
@@ -410,8 +420,6 @@ void ast_free(ast* tree)
     default         :   break;
   }
 }
-
-
 
 // ===========================
 // Memory allocation functions

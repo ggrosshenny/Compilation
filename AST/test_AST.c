@@ -156,6 +156,9 @@ int main()
 
       // ID
     ast* tabId = ast_new_identifier("tab");
+    ast* tabId2 = ast_new_identifier("tab");
+    ast* tabId3 = ast_new_identifier("tab");
+    ast* tabId4 = ast_new_identifier("tab");
       // Dimensions
     ast* dim1 = ast_new_tabDimension(ast_new_number(2));
     ast* dim2 = ast_new_tabDimension(ast_new_number(3));
@@ -180,6 +183,24 @@ int main()
    ast* tabDecl = ast_new_tabDeclaration(tabId, tabDim, tabElem);
    ast* tabInstr = ast_new_Instruction(tabDecl);
 
+      // Table access/affection/incrementation test
+   ast* tabIdx1 = ast_new_tabDimension(ast_new_number(1));
+   ast* tabIdx2 = ast_new_tabDimension(ast_new_number(0));
+   ast* tabIdxs = ast_concat(tabIdx1, tabIdx2);
+   ast* tabAcc = ast_new_tableAccess(tabId2, tabIdxs);
+
+   ast* tabAfct1 = ast_new_binaryOperation(AST_OP_AFCT, tabAcc, ast_new_number(3));
+   ast* tabAfctInstr1 = ast_new_Instruction(tabAfct1);
+
+   ast* tabIdx3 = ast_new_tabDimension(ast_new_number(1));
+   ast* tabIdx4 = ast_new_tabDimension(ast_new_number(0));
+   ast* tabIdxs2 = ast_concat(tabIdx3, tabIdx4);
+
+   ast* tabIncr = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(tabId3, tabIdxs2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(tabId4, tabIdxs2)));
+   ast* tabIncrInstr = ast_new_Instruction(tabIncr);
+
+   ast* tabInstrList = ast_concat(tabInstr, ast_concat(tabAfctInstr1, tabIncrInstr));
+
     // Main function
     // ast* arg1ID = ast_new_identifier("arg1");
     // ast* arg2ID = ast_new_identifier("arg2");
@@ -190,7 +211,7 @@ int main()
     // ast* tempArg = ast_concat(arg1ARG, arg2ARG);
 
     ast* funcID = ast_new_identifier("main");
-    astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(ast_concat(temp, instr1), ast_concat(afctInstr, ast_concat(ifToInstr, tabInstr))));
+    astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(ast_concat(temp, instr1), ast_concat(afctInstr, ast_concat(ifToInstr, tabInstrList))));
 
     print_ast(astTest, 0);
     ast_free(astTest);

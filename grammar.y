@@ -3,14 +3,17 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include "AST/quadToMIPS.h"
+  #
 
   int yylex();
-  void yyerror(char*);
+  void yyerror(const char*);
   extern FILE *yyin;
   extern int yylineno;
   void yyfree();
 
 %}
+%error-verbose
+
   // TYPE DEFINITIONS
 %union{
   int val;
@@ -22,8 +25,10 @@
   // TYPES
 %type <ast> expression;
 %type <ast> statement;
+%type <ast> statement_equal_value;
 %type <ast> condition;
 %type <ast> conditions_list;
+%type <ast> loop_init;
 %type <ast> loop;
 %type <ast> instruction;
 %type <ast> instructions_block;
@@ -32,6 +37,12 @@
 %type <ast> function_declaration;
 %type <ast> function_call;
 %type <ast> function;
+%type <ast> curly_brackets;
+%type <ast> curly_bracket_content_table;
+%type <ast> brackets_table;
+%type <ast> brackets_idx_value;
+%type <ast> table_declaration;
+%type <ast> table_access;
 %type <ast> axiom;
 
   // TOKENS
@@ -70,6 +81,45 @@ axiom:
                                 }
   ;
 
+
+
+table_declaration:
+  TYPE IDENTIFIER brackets_table                                            { $$ = ast_new_tabDeclaration(ast_new_identifier($2), $3, NULL); free($1); free($2); }
+  | TYPE IDENTIFIER brackets_table '=' '{' curly_bracket_content_table '}'  { $$ = ast_new_tabDeclaration(ast_new_identifier($2), $3, $6); free($1); free($2); }
+  ;
+
+brackets_table:
+  brackets_table '[' brackets_idx_value ']'   { $$ = ast_concat($1, ast_new_tabDimension($3)); }
+  | '[' brackets_idx_value ']'                { $$ = ast_new_tabDimension($2); }
+  ;
+
+  brackets_idx_value:
+    expression                        { $$ = $1; }
+    | IDENTIFIER DECR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1))); free($1); }
+    | IDENTIFIER INCR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1))); free($1); }
+    | IDENTIFIER brackets_table DECR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
+    | IDENTIFIER brackets_table INCR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
+    ;
+
+curly_brackets:
+  '{' curly_bracket_content_table '}' ',' curly_brackets                  { $$ = ast_concat(ast_new_tableElementsBlock($2), $5) ; }
+  | '{' curly_bracket_content_table '}'                                   { $$ = ast_new_tableElementsBlock($2); }
+  ;
+
+curly_bracket_content_table:
+  expression ',' curly_bracket_content_table                              { $$ = ast_concat(ast_new_tabElements($1), $3); }
+  | IDENTIFIER DECR ',' curly_bracket_content_table                       { $$ = ast_concat(ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1)))) , $4); free($1); }
+  | IDENTIFIER INCR ',' curly_bracket_content_table                       { $$ = ast_concat(ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)))) , $4); free($1); }
+  | IDENTIFIER brackets_table DECR ',' curly_bracket_content_table        { $$ = ast_concat(ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2)))), $5); free($1); }
+  | IDENTIFIER brackets_table INCR ',' curly_bracket_content_table        { $$ = ast_concat(ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2)))), $5); free($1); }
+  | expression                                                            { $$ = ast_new_tabElements($1); }
+  | IDENTIFIER DECR                                                       { $$ = ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1)))); free($1); }
+  | IDENTIFIER INCR                                                       { $$ = ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)))); free($1); }
+  | IDENTIFIER brackets_table DECR                                        { $$ = ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2)))); free($1); }
+  | IDENTIFIER brackets_table INCR                                        { $$ = ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2)))); free($1); }
+  | curly_brackets                                                        { $$ = ast_new_tabElements($1); }
+  ;
+
 function:
   function_declaration function           { $$ = ast_concat($1, $2); }
   | function_declaration                  { $$ = $1; }
@@ -88,8 +138,10 @@ function_declaration:
 arguments_call:
   IDENTIFIER ',' arguments_call                          { $$ = ast_concat(ast_new_argument(ast_new_identifier($1)), $3); free($1); }
   | STRING_LIT ',' arguments_call                        { $$ = ast_concat(ast_new_argument(ast_new_string($1)), $3); free($1); }
+  | table_access ',' arguments_call                      { $$ = ast_concat(ast_new_argument($1), $3); }
   | IDENTIFIER                                           { $$ = ast_new_argument(ast_new_identifier($1)); free($1); }
   | STRING_LIT                                           { $$ = ast_new_argument(ast_new_string($1)); free($1); }
+  | table_access                                         { $$ = ast_new_argument($1); }
   ;
 
 arguments_declaration:
@@ -106,16 +158,25 @@ instruction:
   statement ';'            { $$ = ast_new_Instruction($1); }
   | loop                   { $$ = ast_new_Instruction($1); }
   | function_call          { $$ = ast_new_Instruction($1); }
+  | table_declaration ';'  { $$ = ast_new_Instruction($1); }
   ;
 
 loop:
   IF '(' conditions_list ')' '{' instructions_block '}'                                                         { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_IF, $3, $6, NULL, NULL, NULL); }
   | IF '(' conditions_list ')' '{' instructions_block '}' ELSE '{' instructions_block '}'                       { placeGoto($3, $6, $10); $$ = ast_new_controlStructure(AST_IF, $3, $6, $10, NULL, NULL); }
   | WHILE '(' conditions_list ')' '{' instructions_block '}'                                                    { placeGoto($3, $6, NULL); $$ = ast_new_controlStructure(AST_WHILE, $3, $6, NULL, NULL, NULL); }
-  | FOR '(' statement ';' conditions_list ';' IDENTIFIER DECR ')' '{' instructions_block '}'                    { placeGoto($5, $11, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $11, NULL, $3, ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($7))); free($7); }
-  | FOR '(' statement ';' conditions_list ';' IDENTIFIER INCR ')' '{' instructions_block '}'                    { placeGoto($5, $11, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $11, NULL, $3, ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($7))); free($7); }
-  | FOR '(' statement ';' conditions_list ';' IDENTIFIER '=' expression ')' '{' instructions_block '}'          { placeGoto($5, $12, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $12, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($7), $9)); free($7); }
+  | FOR '(' loop_init ';' conditions_list ';' IDENTIFIER brackets_table DECR ')' '{' instructions_block '}'     { placeGoto($5, $12, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $12, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($7), $8), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($7), $8)))); free($7); }
+  | FOR '(' loop_init ';' conditions_list ';' IDENTIFIER brackets_table INCR ')' '{' instructions_block '}'     { placeGoto($5, $12, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $12, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($7), $8), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($7), $8)))); free($7); }
+  | FOR '(' loop_init ';' conditions_list ';' table_access '=' expression ')' '{' instructions_block '}'        { placeGoto($5, $12, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $12, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, $7, $9)); }
+  | FOR '(' loop_init ';' conditions_list ';' IDENTIFIER DECR ')' '{' instructions_block '}'                    { placeGoto($5, $11, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $11, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($7), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($7)))); free($7); }
+  | FOR '(' loop_init ';' conditions_list ';' IDENTIFIER INCR ')' '{' instructions_block '}'                    { placeGoto($5, $11, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $11, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($7), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($7)))); free($7); }
+  | FOR '(' loop_init ';' conditions_list ';' IDENTIFIER '=' expression ')' '{' instructions_block '}'          { placeGoto($5, $12, NULL); $$ = ast_new_controlStructure(AST_FOR, $5, $12, NULL, $3, ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($7), $9)); free($7); }
   ;
+
+loop_init:
+  statement                 { $$ = $1; }
+  | IDENTIFIER              { $$ = ast_new_identifier($1); free($1); }
+  | table_access            { $$ = $1; }
 
 conditions_list:
   conditions_list AND conditions_list             { $1->component.boolean.ast_true = $3; }
@@ -133,12 +194,24 @@ condition:
   | expression '>' expression     { $$ = ast_new_binaryOperation(AST_BOOL_GT, $1, $3); }
   ;
 
+statement_equal_value:
+  expression                        { $$ = $1; }
+  | IDENTIFIER DECR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1))); free($1); }
+  | IDENTIFIER INCR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1))); free($1); }
+  | IDENTIFIER brackets_table DECR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
+  | IDENTIFIER brackets_table INCR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
+  ;
+
+
 statement:
-  IDENTIFIER '=' expression         { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), $3); free($1); }
-  | TYPE IDENTIFIER                 { $$ = ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)); free($1); free($2); }
-  | TYPE IDENTIFIER '=' expression  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)), $4); free($1); free($2); }
-  | IDENTIFIER DECR                 { $$ = ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1)); free($1); }
-  | IDENTIFIER INCR                 { $$ = ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)); free($1); }
+  IDENTIFIER '=' statement_equal_value         { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), $3); free($1); }
+  | TYPE IDENTIFIER                            { $$ = ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)); free($1); free($2); }
+  | TYPE IDENTIFIER '=' statement_equal_value  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier($2)), $4); free($1); free($2); }
+  | IDENTIFIER DECR                            { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1))); free($1); }
+  | IDENTIFIER INCR                            { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1))); free($1); }
+  | table_access '=' statement_equal_value     { $$ = ast_new_binaryOperation(AST_OP_AFCT, $1, $3); }
+  | IDENTIFIER brackets_table DECR             { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
+  | IDENTIFIER brackets_table INCR             { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
   ;
 
 
@@ -151,11 +224,16 @@ expression:
   | '-' expression            { $$ = ast_new_unaryOperation(AST_OP_MINUS, $2); }
   | NUMBER                    { $$ = ast_new_number($1); }
   | IDENTIFIER                { $$ = ast_new_identifier($1); free($1); }
+  | table_access              { $$ = $1; }
   ;
+
+  table_access:
+    IDENTIFIER brackets_table           { $$ = ast_new_tableAccess(ast_new_identifier($1), $2); free($1); }
+    ;
 
 %%
 
-void yyerror(char *s) {
+void yyerror(const char *s) {
     fprintf(stderr, "line %d: %s\n", yylineno, s);
 }
 
@@ -165,6 +243,6 @@ int main(int argc, char** argv){
     yyparse();
   } while (!feof(yyin));
   fclose(yyin);
-  yyfree();
+  //yyfree();
   return 0;
 }
