@@ -190,6 +190,11 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.tableDeclaration.dimensions, indent);
                           print_ast(tree->component.tableDeclaration.elements, indent);
                           break;
+      case AST_OP_STEN :  indent++;
+                          printf("Stencil operator\n");
+                          print_ast(tree->component.operation.left, indent);
+                          print_ast(tree->component.operation.right, indent);
+                          break;
 
       default         :   break;
     }

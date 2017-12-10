@@ -242,6 +242,7 @@ int main()
   ast* stenOpTestInstr = ast_new_Instruction(afctStenOpTest);
   ast* stenOpTestAST = ast_concat(stenDeclAST, stenOpTestInstr);
 
+
   ast* funcID = ast_new_identifier("main");
   astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, stenOpTestAST));
 
@@ -250,7 +251,8 @@ int main()
   codegen* cgBis = codegen_init();
   cgBis = codegen_ast(cgBis, astTest, symTableTest);
 
-  genMIPS_genCode("test_quadToMIPS.test", cgBis, symTableTest);
+
+  genMIPS_genCode("test_quadToMIPS.s", cgBis, symTableTest);
 
   // Frees and close here
   symTable_free(symTableTest);

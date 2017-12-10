@@ -192,10 +192,6 @@ void codegen_ast_affectation(codegen* cg, enum ast_type type, codegen* left, cod
 
   if(right != NULL)
   {
-    if(right->result->isTabElemAdr)
-    {
-      printf("ElemQuad : %s\n", right->result->content.val.string);
-    }
     quad_add(cg->code, type, left->result, right->result, cg->result);
   }
   else
@@ -608,7 +604,6 @@ void codegen_ast_stencilOperation(codegen* cg, ast* tree, symTable* symbol_table
 // Warning, very long function ! :(
 void codegen_ast_stencilOperationAux(codegen* cg, ast* tabIndices, dims* tabDim, dims* stenDim, symbol* tabSym, symbol* stenSym, int tabLastBlockAdr, int stenLastBlockAdr, symTable* symbol_table)
 {
-  symbol* lastComputeValueResult = NULL;
   symbol* temporaryVar = NULL;
   symbol* temporaryVarBis = NULL;
   symbol* stenElemAdr = NULL;
@@ -1005,6 +1000,13 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         quadList_free_keepList(right->code);
 
         codegen_ast_operations(cg, AST_OP_DECR, left, NULL, symbol_table);
+        break;
+
+      case AST_RETURN:
+        left = codegen_ast(left, ast->component.operation.left, symbol_table);
+        quadList_free_keepList(right->code);
+
+        codegen_ast_operations(cg, AST_RETURN, left, NULL, symbol_table);
         break;
 
       case AST_OP_STEN:

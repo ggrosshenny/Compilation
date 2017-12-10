@@ -131,6 +131,14 @@ void genMIPS_genDecr(MIPS* mips, quad* qd);
 void genMIPS_genMinus(MIPS* mips, quad* qd);
 
 
+/**
+* @brief genMIPS_genReturn Generate the MIPS code for the return with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genReturn(MIPS* mips, quad* qd);
+
+
 // ====================
 // Functions operations
 

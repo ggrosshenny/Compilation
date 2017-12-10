@@ -130,6 +130,8 @@ void genMIPS_genCode(char* fileName, codegen* cg , symTable* table)
                           break;
       case AST_OP_MINUS : genMIPS_genMinus(mips, ql);
                           break;
+      case AST_RETURN   : genMIPS_genReturn(mips, ql);
+                          break;
       // Function
       case AST_FUNC_DEF : genMIPS_genFunctionDeclaration(mips, ql);
                           break;
@@ -433,6 +435,31 @@ void genMIPS_genMinus(MIPS* mips, quad* qd)
   fprintf(mips->fileMIPS, "mult\t$t0, $t1\n");
   fprintf(mips->fileMIPS, "mflo\t$t2\n");
   fprintf(mips->fileMIPS, "sw\t$t2, %s\n", qd->res->identifier);
+}
+
+
+void genMIPS_genReturn(MIPS* mips, quad* qd)
+{
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  fprintf(mips->fileMIPS, "sw\t$t0, 4($sp)\n");
+  fprintf(mips->fileMIPS, "jr\t$ra\n");
 }
 
 
