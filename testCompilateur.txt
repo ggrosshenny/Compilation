@@ -1,0 +1,25 @@
+int main()
+{
+  int i = 0;
+  int un = 1;
+  int zero = 0;
+  i++;
+  printi(i);
+  
+  if(i==5)
+  {
+    printi(un);
+  }
+  else
+  {
+    printi(deux);
+  }
+  
+  int tab[3][3]={{1,2,3}, {4,5,6}, {7,8,9}};
+  
+  stencil s{1, 2} = {{2,2,2}, {2,2,2}, {2,2,2}};
+  
+  int x = s$tab[1][2];
+  
+  printi(x);
+}

@@ -119,15 +119,15 @@ define_body:
   ;
 
 stencil_declaration:
-  TYPE IDENTIFIER '{' brackets_idx_value ',' brackets_idx_value '}' '=' curly_bracket_content_table   { int nbNeighbours = ($4->component.number*2)+1;
+  TYPE IDENTIFIER '{' brackets_idx_value ',' brackets_idx_value '}' '=' '{' curly_bracket_content_table '}'   { int nbNeighbours = ($4->component.number*2)+1;
                                                                                                         int nbDim = $6->component.number;
 
-                                                                                                        ast* tabDim = ast_new_tabDimension(ast_new_number(nbNeighbours));
-                                                                                                        for(int i = 0; i < nbDim; i++){
+                                                                                                        ast* tabDim = ast_new_tabDimension(ast_new_number(3));
+                                                                                                        for(int i = 1; i < nbDim; i++){
                                                                                                           tabDim = ast_concat(tabDim, ast_new_tabDimension(ast_new_number(nbNeighbours)));
                                                                                                         }
 
-                                                                                                        ast* stencil = ast_new_tabDeclaration(ast_new_identifier($2), tabDim, $9);
+                                                                                                        ast* stencil = ast_new_tabDeclaration(ast_new_identifier($2), tabDim, $10);
                                                                                                         $$ = stencil;
                                                                                                         free($1);
                                                                                                       }
@@ -178,7 +178,7 @@ stencil_call:
     | IDENTIFIER INCR                                                       { $$ = ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1)))); free($1); }
     | IDENTIFIER brackets_table DECR                                        { $$ = ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2)))); free($1); }
     | IDENTIFIER brackets_table INCR                                        { $$ = ast_new_tabElements(ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2)))); free($1); }
-    | curly_brackets                                                        { $$ = ast_new_tabElements($1); }
+    | curly_brackets                                                        { $$ = $1; }
     ;
 
   function_call:
