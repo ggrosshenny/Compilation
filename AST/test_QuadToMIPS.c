@@ -187,8 +187,63 @@ int main()
 
   ast* tempTableOp = ast_concat(temp6, tabAccInstr);
 
+  // Stencils tests
+
+    // Stencil declaration
+  ast* stenId = ast_new_identifier("sten");
+    // Dimensions
+  ast* dim1Sten = ast_new_tabDimension(ast_new_number(3));
+  ast* dim2Sten = ast_new_tabDimension(ast_new_number(3));
+  ast* stenDim = ast_concat(dim1Sten, dim2Sten);
+    // Elements
+  //first block
+  ast* elem00Sten = ast_new_tabElements(ast_new_number(0));
+  ast* elem01Sten = ast_new_tabElements(ast_new_number(1));
+  ast* temp_elem0Sten = ast_concat(elem00Sten, elem01Sten);
+  ast* elem02Sten = ast_new_tabElements(ast_new_number(2));
+  ast* temp_elem1Sten = ast_concat(temp_elem0Sten, elem02Sten);
+  ast* tabBlock0Sten = ast_new_tableElementsBlock(temp_elem1Sten);
+  // Second block
+  ast* elem10Sten = ast_new_tabElements(ast_new_number(10));
+  ast* elem11Sten = ast_new_tabElements(ast_new_number(11));
+  ast* temp_elem3Sten = ast_concat(elem10Sten, elem11Sten);
+  ast* elem12Sten = ast_new_tabElements(ast_new_number(12));
+  ast* temp_elem4Sten = ast_concat(temp_elem3Sten, elem12Sten);
+  ast* tabBlock1Sten = ast_new_tableElementsBlock(temp_elem4Sten);
+  ast* StenElem = ast_concat(tabBlock0Sten, tabBlock1Sten);
+  // Third block
+  ast* elem20Sten = ast_new_tabElements(ast_new_number(10));
+  ast* elem21Sten = ast_new_tabElements(ast_new_number(11));
+  ast* temp_elem5Sten = ast_concat(elem20Sten, elem21Sten);
+  ast* elem22Sten = ast_new_tabElements(ast_new_number(12));
+  ast* temp_elem6Sten = ast_concat(temp_elem5Sten, elem22Sten);
+  ast* tabBlock2Sten = ast_new_tableElementsBlock(temp_elem6Sten);
+  StenElem = ast_concat(StenElem, tabBlock2Sten);
+    // AST stencil declaration
+  ast* stenDecl = ast_new_tabDeclaration(stenId, stenDim, StenElem);
+  stenDecl->type = AST_STENCIL_DECL;
+  ast* stenInstr = ast_new_Instruction(stenDecl);
+  ast* stenDeclAST = ast_concat(tempTableOp, stenInstr);
+
+    // Stencil operation test
+
+  // Table access test
+    // ID
+  ast* tabIdStenOp = ast_new_identifier("tab");
+    // Dimensions
+  ast* dim1StenOp = ast_new_tabDimension(ast_new_number(1));
+  ast* dim2StenOp = ast_new_tabDimension(ast_new_number(2));
+  ast* tabDimStenOp = ast_concat(dim1StenOp, dim2StenOp);
+  ast* rightStenOp = ast_new_tableAccess(tabIdStenOp, tabDimStenOp);
+  ast* leftStenOp = ast_new_identifier("sten");
+  ast* stenOpTest = ast_new_binaryOperation(AST_OP_STEN, leftStenOp, rightStenOp);
+  ast* afctStenOpTest = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, ast_new_identifier("testSten")), stenOpTest);
+
+  ast* stenOpTestInstr = ast_new_Instruction(afctStenOpTest);
+  ast* stenOpTestAST = ast_concat(stenDeclAST, stenOpTestInstr);
+
   ast* funcID = ast_new_identifier("main");
-  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, tempTableOp));
+  astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(temp2, stenOpTestAST));
 
   symTable* symTableTest = genSymTable_init(astTest);
 

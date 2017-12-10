@@ -59,6 +59,17 @@ void symbol_printList(symbol* symbolList)
         }
         printf("\n");
       }
+      else if(temp->isStencil)
+      {
+        printf("\t%s\tstencil", temp->identifier);
+        tempDim = temp->content.val.dimensions;
+        while(tempDim != NULL)
+        {
+          printf(" - %d", tempDim->currentDim);
+          tempDim = tempDim->nextDim;
+        }
+        printf("\n");
+      }
       else if(temp->isTabElemAdr)
       {
         if(temp->content.type == INT)
@@ -155,7 +166,7 @@ void symTable_free(symTable* table)
             free(tempArg);
           }
         }
-        else if(temp->isTable)
+        else if((temp->isTable) || (temp->isStencil))
         {
           dimensions = temp->content.val.dimensions;
           while(dimensions != NULL)
@@ -241,6 +252,7 @@ symbol* symTable_newTemp(symTable* table, enum value_type val_type, value val0)
   newTemp->isConstant = false;
   newTemp->isFunction = false;
   newTemp->isTable = false;
+  newTemp->isStencil = false;
   newTemp->isLabel = false;
   newTemp->isTabElemAdr = false;
   newTemp->content.type = val_type;
@@ -265,6 +277,7 @@ symbol* symTable_addConst(symTable* table, char* constName)
   newConst->isConstant = true;
   newConst->isFunction = false;
   newConst->isTable = false;
+  newConst->isStencil = false;
   newConst->isLabel = false;
   newConst->isTabElemAdr = false;
   temp = symTable_add(table, newConst);
@@ -285,6 +298,7 @@ symbol* symTable_addFunc(symTable* table, char* funcName)
   newFunc->isConstant = false;
   newFunc->isFunction = true;
   newFunc->isTable = false;
+  newFunc->isStencil = false;
   newFunc->isLabel = false;
   newFunc->isTabElemAdr = false;
   temp = symTable_add(table, newFunc);
@@ -305,6 +319,7 @@ symbol* symTable_addTable(symTable* table, char* tabId)
   newTab->isConstant = false;
   newTab->isFunction = false;
   newTab->isTable = true;
+  newTab->isStencil = false;
   newTab->isLabel = false;
   newTab->isTabElemAdr = false;
   temp = symTable_add(table, newTab);
@@ -326,6 +341,7 @@ symbol* symTable_addLabel(symTable* table, char* label, enum labelType type)
   newLabel->isConstant = false;
   newLabel->isFunction = false;
   newLabel->isTable = false;
+  newLabel->isStencil = false;
   newLabel->isLabel = true;
   newLabel->isTabElemAdr = false;
 
@@ -369,6 +385,7 @@ symbol* symTable_addTabElemAdr(symTable* table, enum value_type val_type, value 
   newTabElemAdr->isConstant = false;
   newTabElemAdr->isFunction = false;
   newTabElemAdr->isTable = false;
+  newTabElemAdr->isStencil = false;
   newTabElemAdr->isLabel = false;
   newTabElemAdr->isTabElemAdr = true;
   newTabElemAdr->content.type = val_type;

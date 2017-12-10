@@ -52,6 +52,8 @@ typedef struct s_symbol
   bool isVoidFunction;
     // Bool to know if the symbol is a table
   bool isTable;
+    // Bool to know if the symbol is a stencil
+  bool isStencil;
     // Bool to know if the symbol is a label
   bool isLabel;
     // Bool to know if the symbol is a table indices

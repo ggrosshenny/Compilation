@@ -20,7 +20,8 @@ enum ast_type{AST_INT, AST_STR, AST_ID, // Basic types
               AST_BOOL_LT, AST_BOOL_LEQ,  //Boolean expressions
               AST_AND_TREE, AST_OR_TREE, AST_BOOL_TREE, AST_GOTO, AST_CREATE_LABEL, // Boolean structures
               AST_IF, AST_WHILE, AST_FOR,  // Control structures
-              AST_TAB_DECL, AST_TAB_ACSS, AST_TAB_ELEM, AST_TAB_DIM, AST_TAB_BLCK, AST_TAB_AFCT // Table
+              AST_TAB_DECL, AST_TAB_ACSS, AST_TAB_ELEM, AST_TAB_DIM, AST_TAB_BLCK, AST_TAB_AFCT, // Table
+              AST_STENCIL_DECL, AST_STENCIL_ACSS, AST_OP_STEN // Stencil
             };
 
 // Ast definition

@@ -221,6 +221,30 @@ void codegen_ast_tableAccess(codegen* cg, ast* tree, symTable* symbol_table);
 
 
 /**
+ * @brief codegen_ast_stencilOperation Auxiliary function for codegen_ast that generate the elements needed to generate quads for the stencil operations
+ * @param cg Codegen instance
+ * @param ast AST
+ * @param symbol_table symbol table
+ **/
+void codegen_ast_stencilOperation(codegen* cg, ast* tree, symTable* symbol_table);
+
+
+/**
+ * @brief codegen_ast_stencilOperationAux Auxiliary function for codegen_ast_stencilOperation that generate the quads of the stencil operation between a stencil and a table element
+ * @param cg Codegen instance
+ * @param tabIndices indices of the element in the table
+ * @param tabDim current dimension and all next dimensions of the table
+ * @param stenDim current dimension and all next dimensions of the stencil
+ * @param tabSym symbol representing the table
+ * @param stenSym symbol representing the stencil
+ * @param tabLastBlockAdr adress value of the last tab elements block
+ * @param stenLastBlockAdr adress value of the last stencil elements block
+ * @param symbol_table symbol table
+ **/
+void codegen_ast_stencilOperationAux(codegen* cg, ast* tabIndices, dims* tabDim, dims* stenDim, symbol* tabSym, symbol* stenSym, int tabLastBlockAdr, int stenLastBlockAdr, symTable* symbol_table);
+
+
+/**
 * @brief codegen_ast  Generate quads through recursive AST analysis
 * @param ast Tree to analyze
 * @param symbol_table

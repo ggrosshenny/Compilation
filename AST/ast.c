@@ -183,6 +183,14 @@ void print_ast(ast* tree, int indent)
                           print_ast(tree->component.tableElementsList.nextElem, --indent);
                           break;
 
+      case AST_STENCIL_DECL :
+                          indent++;
+                          printf("Stencil declaration\n");
+                          print_ast(tree->component.tableDeclaration.identifier, indent);
+                          print_ast(tree->component.tableDeclaration.dimensions, indent);
+                          print_ast(tree->component.tableDeclaration.elements, indent);
+                          break;
+
       default         :   break;
     }
   }
@@ -317,6 +325,10 @@ void ast_free(ast* tree)
                         ast_free(tree->component.operation.right);
                         free(tree);
                         break;
+    case AST_OP_STEN :  ast_free(tree->component.operation.left);
+                        ast_free(tree->component.operation.right);
+                        free(tree);
+                        break;
     // Unary operations
     case AST_OP_INCR  : if(tree->component.operation.left->type != AST_TAB_ACSS)
                           ast_free(tree->component.operation.left);
@@ -430,6 +442,12 @@ void ast_free(ast* tree)
                         ast_free(tree->component.tableElementsBlock.nextBlock);
                         free(tree);
                         break;
+    case AST_STENCIL_DECL :
+      ast_free(tree->component.tableDeclaration.identifier);
+      ast_free(tree->component.tableDeclaration.dimensions);
+      ast_free(tree->component.tableDeclaration.elements);
+      free(tree);
+      break;
 
     default         :   break;
   }

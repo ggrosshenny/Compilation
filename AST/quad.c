@@ -591,6 +591,318 @@ void codegen_ast_tableAccess(codegen* cg, ast* tree, symTable* symbol_table)
 }
 
 
+void codegen_ast_stencilOperation(codegen* cg, ast* tree, symTable* symbol_table)
+{
+  ast* stencil = tree->component.operation.left;
+  ast* table = tree->component.operation.right;
+  symbol* tabSym = symTable_lookUp(symbol_table, table->component.tableAccess.identifier->component.identifier);
+  symbol* stenSym = symTable_lookUp(symbol_table, stencil->component.identifier);
+  dims* tabDim = tabSym->content.val.dimensions;
+  dims* stenDim = stenSym->content.val.dimensions;
+  ast* tabIndices = table->component.tableAccess.indices;
+
+  codegen_ast_stencilOperationAux(cg, tabIndices, tabDim, stenDim, tabSym, stenSym, 0, 0, symbol_table);
+}
+
+
+// Warning, very long function ! :(
+void codegen_ast_stencilOperationAux(codegen* cg, ast* tabIndices, dims* tabDim, dims* stenDim, symbol* tabSym, symbol* stenSym, int tabLastBlockAdr, int stenLastBlockAdr, symTable* symbol_table)
+{
+  symbol* lastComputeValueResult = NULL;
+  symbol* temporaryVar = NULL;
+  symbol* temporaryVarBis = NULL;
+  symbol* stenElemAdr = NULL;
+  symbol* tabElemAdr = NULL;
+  value val0;
+  codegen* temp = NULL;
+  int stenDimSizesMultiplication = 1;
+  int tabDimSizesMultiplication = 1;
+  int stenDimSize = 0;
+  int tabDimSize = 0;
+  int tabShiftVal = 0;
+  int currentDimensionElemIndice = 0;
+  dims* tempStenDims = NULL;
+  dims* tempTabDims = NULL;
+  value val;
+  char* tabAcessForMIPSUsage = NULL;
+
+  // First case : table and stencil has the same dimensions
+  if((stenDim->nextDim != NULL) && (tabDim->nextDim != NULL))
+  {
+    tempStenDims = stenDim->nextDim;
+    tempTabDims = tabDim->nextDim;
+
+    // Compute stenDimSizesMultiplication
+    while(tempStenDims != NULL)
+    {
+      stenDimSizesMultiplication *= tempStenDims->currentDim;
+      tempStenDims = tempStenDims->nextDim;
+    }
+
+    // Compute tabDimSizesMultiplication
+    while(tempTabDims != NULL)
+    {
+      tabDimSizesMultiplication *= tempTabDims->currentDim;
+      tempTabDims = tempTabDims->nextDim;
+    }
+
+    // Find table and stencil current dimension size
+    stenDimSize = stenDim->currentDim;
+    tabDimSize = tabDim->currentDim;
+
+    // Compute value shift on the table
+    tabShiftVal = stenDimSize/2;
+
+    // find adresses for the stencil applications on the table
+    // to find the (i,j) pixel value
+    currentDimensionElemIndice = tabIndices->component.tableDimensionsList.val->component.number;
+    for(int i=0; i<stenDimSize; i++)
+    {
+      temp = codegen_init();
+      // First case, the aimed value indice in the current dimension is less than 0
+      if((currentDimensionElemIndice - tabShiftVal + i) < 0)
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices->component.tableDimensionsList.nextDim, tabDim->nextDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr, stenLastBlockAdr + (i * stenDimSizesMultiplication), symbol_table);
+      }
+      // Second case, the aimed value indice in the current dimension is greater than the table current dimension size
+      else if((currentDimensionElemIndice - tabShiftVal + i) > (tabDim->currentDim -1))
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices->component.tableDimensionsList.nextDim, tabDim->nextDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr  + ((tabDim->currentDim - 1) * tabDimSizesMultiplication), stenLastBlockAdr + (i * stenDimSizesMultiplication), symbol_table);
+      }
+      // Third case, the aimed value indice in the current dimension is in the current dimension
+      else
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices->component.tableDimensionsList.nextDim, tabDim->nextDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr + ((currentDimensionElemIndice - tabShiftVal + i) * tabDimSizesMultiplication), stenLastBlockAdr + (i * stenDimSizesMultiplication), symbol_table);
+      }
+
+      // Concat producted quads
+
+      temporaryVar = cg->result;
+      cg->code = concat(cg->code, temp->code);
+
+      if(i>0)
+      {
+        val0.integer = 0;
+        temporaryVarBis = symTable_newTemp(symbol_table, INT, val0);
+        quad_add(cg->code, AST_OP_ADD, temporaryVar, temp->result, temporaryVarBis);
+        cg->result = temporaryVarBis;
+      }
+      else
+      {
+        cg->result = temp->result;
+      }
+
+      codegen_keepQuadList_free(temp);
+    }
+  }
+  // Second case : table has  a biger amount of dimensions than stencil
+  else if((stenDim->nextDim == NULL) && (tabDim->nextDim != NULL))
+  {
+    tempTabDims = tabDim->nextDim;
+
+    // Compute tabDimSizesMultiplication
+    while(tempTabDims != NULL)
+    {
+      tabDimSizesMultiplication *= tempTabDims->currentDim;
+      tempTabDims = tempTabDims->nextDim;
+    }
+
+    // Find table and stencil current dimension size
+    stenDimSize = stenDim->currentDim;
+    tabDimSize = tabDim->currentDim;
+
+    // Compute value shift on the table
+    tabShiftVal = stenDimSize/2;
+
+    // find adresses for the stencil applications on the table
+    // to find the (i,j) pixel value
+    currentDimensionElemIndice = tabIndices->component.tableDimensionsList.val->component.number;
+    for(int i=0; i<stenDimSize; i++)
+    {
+      temp = codegen_init();
+      // First case, the aimed value indice in the current dimension is less than 0
+      if((currentDimensionElemIndice - tabShiftVal + i) < 0)
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices->component.tableDimensionsList.nextDim, tabDim->nextDim, stenDim, tabSym, stenSym, tabLastBlockAdr, stenLastBlockAdr, symbol_table);
+      }
+      // Second case, the aimed value indice in the current dimension is greater than the table current dimension size
+      else if((currentDimensionElemIndice - tabShiftVal + i) > (tabDim->currentDim -1))
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices->component.tableDimensionsList.nextDim, tabDim->nextDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr  + ((tabDim->currentDim - 1) * tabDimSizesMultiplication), stenLastBlockAdr, symbol_table);
+      }
+      // Third case, the aimed value indice in the current dimension is in the current dimension
+      else
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices->component.tableDimensionsList.nextDim, tabDim->nextDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr  + ((currentDimensionElemIndice - tabShiftVal + i) * tabDimSizesMultiplication), stenLastBlockAdr, symbol_table);
+      }
+
+      // Concat producted quads
+
+      temporaryVar = cg->result;
+      cg->code = concat(cg->code, temp->code);
+
+      if(i>0)
+      {
+        val0.integer = 0;
+        temporaryVarBis = symTable_newTemp(symbol_table, INT, val0);
+        quad_add(cg->code, AST_OP_ADD, temporaryVar, temp->result, temporaryVarBis);
+        cg->result = temporaryVarBis;
+      }
+      else
+      {
+        cg->result = temp->result;
+      }
+
+
+      codegen_keepQuadList_free(temp);
+    }
+  }
+  // Third case : stencil has  a biger amount of dimensions than table
+  else if((stenDim->nextDim != NULL) && (tabDim->nextDim == NULL))
+  {
+    tempStenDims = stenDim->nextDim;
+
+    // Compute stenDimSizesMultiplication
+    while(tempStenDims != NULL)
+    {
+      stenDimSizesMultiplication *= tempStenDims->currentDim;
+      tempStenDims = tempStenDims->nextDim;
+    }
+
+    // Find table and stencil current dimension size
+    stenDimSize = stenDim->currentDim;
+    tabDimSize = tabDim->currentDim;
+
+    // Compute value shift on the table
+    tabShiftVal = stenDimSize/2;
+
+    // find adresses for the stencil applications on the table
+    // to find the (i,j) pixel value
+    currentDimensionElemIndice = tabIndices->component.tableDimensionsList.val->component.number;
+    for(int i=0; i<stenDimSize; i++)
+    {
+      temp = codegen_init();
+      // First case, the aimed value indice in the current dimension is less than 0
+      if((currentDimensionElemIndice - tabShiftVal + i) < 0)
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices, tabDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr, stenLastBlockAdr + (i * stenDimSizesMultiplication), symbol_table);
+      }
+      // Second case, the aimed value indice in the current dimension is greater than the table current dimension size
+      else if((currentDimensionElemIndice - tabShiftVal + i) > (tabDim->currentDim -1))
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices, tabDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr, stenLastBlockAdr + (i * stenDimSizesMultiplication), symbol_table);
+      }
+      // Third case, the aimed value indice in the current dimension is in the current dimension
+      else
+      {
+        codegen_ast_stencilOperationAux(temp, tabIndices, tabDim, stenDim->nextDim, tabSym, stenSym, tabLastBlockAdr, stenLastBlockAdr + (i * stenDimSizesMultiplication), symbol_table);
+      }
+
+      // Concat producted quads
+
+      temporaryVar = cg->result;
+      cg->code = concat(cg->code, temp->code);
+
+      if(i>0)
+      {
+        val0.integer = 0;
+        temporaryVarBis = symTable_newTemp(symbol_table, INT, val0);
+        quad_add(cg->code, AST_OP_ADD, temporaryVar, temp->result, temporaryVarBis);
+        cg->result = temporaryVarBis;
+      }
+      else
+      {
+        cg->result = temp->result;
+      }
+
+      codegen_keepQuadList_free(temp);
+    }
+  }
+  // end of recursion, we are at the last dimension of stencil AND table
+  else if((stenDim->nextDim == NULL) && (tabDim->nextDim == NULL))
+  {
+    // Find table and stencil current dimension size
+    stenDimSize = stenDim->currentDim;
+    tabDimSize = tabDim->currentDim;
+
+    // Compute value shift on the table
+    tabShiftVal = stenDimSize/2;
+
+    // find adresses for the stencil applications on the table
+    // to find the (i,j) pixel value
+    currentDimensionElemIndice = tabIndices->component.tableDimensionsList.val->component.number;
+    for(int i=0; i<stenDimSize; i++)
+    {
+      // First case, the aimed value indice in the current dimension is less than 0
+      if((currentDimensionElemIndice - tabShiftVal + i) < 0)
+      {
+        // Generate adr + tab name for stencil
+        tabAcessForMIPSUsage = calloc(256, sizeof(char));
+        snprintf(tabAcessForMIPSUsage, 256, "%d %s", (stenLastBlockAdr + i) * WORDSIZE, stenSym->identifier);
+        val.string = tabAcessForMIPSUsage;
+        stenElemAdr = symTable_addTabElemAdr(symbol_table, STRING, val);
+
+        // Generate adr + tab name for table
+        tabAcessForMIPSUsage = calloc(256, sizeof(char));
+        snprintf(tabAcessForMIPSUsage, 256, "%d %s", tabLastBlockAdr * WORDSIZE, tabSym->identifier);
+        val.string = tabAcessForMIPSUsage;
+        tabElemAdr = symTable_addTabElemAdr(symbol_table, STRING, val);
+      }
+      // Second case, the aimed value indice in the current dimension is greater than the table current dimension size
+      else if((currentDimensionElemIndice - tabShiftVal + i) > (tabDim->currentDim -1))
+      {
+        // Generate adr + tab name for stencil
+        tabAcessForMIPSUsage = calloc(256, sizeof(char));
+        snprintf(tabAcessForMIPSUsage, 256, "%d %s", (stenLastBlockAdr + i) * WORDSIZE, stenSym->identifier);
+        val.string = tabAcessForMIPSUsage;
+        stenElemAdr = symTable_addTabElemAdr(symbol_table, STRING, val);
+
+        // Generate adr + tab name for table
+        tabAcessForMIPSUsage = calloc(256, sizeof(char));
+        snprintf(tabAcessForMIPSUsage, 256, "%d %s", (tabLastBlockAdr + (tabDimSize-1)) * WORDSIZE, tabSym->identifier);
+        val.string = tabAcessForMIPSUsage;
+        tabElemAdr = symTable_addTabElemAdr(symbol_table, STRING, val);
+      }
+      // Third case, the aimed value indice in the current dimension is in the current dimension
+      else
+      {
+        // Generate adr + tab name for stencil
+        tabAcessForMIPSUsage = calloc(256, sizeof(char));
+        snprintf(tabAcessForMIPSUsage, 256, "%d %s", (stenLastBlockAdr + i) * WORDSIZE, stenSym->identifier);
+        val.string = tabAcessForMIPSUsage;
+        stenElemAdr = symTable_addTabElemAdr(symbol_table, STRING, val);
+
+        // Generate adr + tab name for table
+        tabAcessForMIPSUsage = calloc(256, sizeof(char));
+        snprintf(tabAcessForMIPSUsage, 256, "%d %s", (tabLastBlockAdr + (currentDimensionElemIndice - tabShiftVal + i)) * WORDSIZE, tabSym->identifier);
+        val.string = tabAcessForMIPSUsage;
+        tabElemAdr = symTable_addTabElemAdr(symbol_table, STRING, val);
+      }
+
+      // quads creations
+
+      val0.integer = 0;
+      temporaryVar = symTable_newTemp(symbol_table, INT, val0);
+
+      if(i>0)
+      {
+        val0.integer = 0;
+        temporaryVarBis = symTable_newTemp(symbol_table, INT, val0);
+        quad_add(cg->code, AST_OP_MULT, stenElemAdr, tabElemAdr, temporaryVar);
+        quad_add(cg->code, AST_OP_ADD, cg->result, temporaryVar, temporaryVarBis);
+        cg->result = temporaryVarBis;
+      }
+      else
+      {
+        quad_add(cg->code, AST_OP_MULT, stenElemAdr, tabElemAdr, temporaryVar);
+        cg->result = temporaryVar;
+      }
+    }
+  }
+
+
+}
+
 
 codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
@@ -695,6 +1007,10 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
         codegen_ast_operations(cg, AST_OP_DECR, left, NULL, symbol_table);
         break;
 
+      case AST_OP_STEN:
+        codegen_ast_stencilOperation(cg, ast, symbol_table);
+        break;
+
       // Functions
       case AST_FUNC_DEF:
         // Need to create function "genCode_createFunc" for ID and Arguments section in function AST
@@ -743,6 +1059,12 @@ codegen* codegen_ast(codegen* cg, ast* ast, symTable* symbol_table){
 
       case AST_TAB_ACSS :
         codegen_ast_tableAccess(cg, ast, symbol_table);
+        quadList_free_keepList(right->code);
+        quadList_free_keepList(left->code);
+        break;
+
+      case AST_STENCIL_DECL :
+        codegen_ast_tableDeclaration(cg, ast, symbol_table);
         quadList_free_keepList(right->code);
         quadList_free_keepList(left->code);
         break;

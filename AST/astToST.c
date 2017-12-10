@@ -46,6 +46,7 @@ symTable* genSymTable_init(ast* tree)
 
 ast* genSymTable_ast(ast* tree, symTable* st)
 {
+  symbol* temp;
   if(tree != NULL)
   {
     switch(tree->type)
@@ -155,6 +156,12 @@ ast* genSymTable_ast(ast* tree, symTable* st)
       case AST_TAB_DECL :
         genSymTable_tableDeclaration(tree, st);
         break;
+      case AST_STENCIL_DECL :
+        genSymTable_tableDeclaration(tree, st);
+        temp = symTable_lookUp(st, tree->component.tableDeclaration.identifier->component.identifier);
+        temp->isTable = false;
+        temp->isStencil = true;
+        break;
       case AST_TAB_DIM :
         genSymTable_ast(tree->component.tableDimensionsList.val, st);
         genSymTable_ast(tree->component.tableDimensionsList.nextDim, st);
@@ -182,6 +189,9 @@ ast* genSymTable_binaryOperation(ast* tree, symTable* st)
 {
   ast* left = tree->component.operation.left;
   ast* right = tree->component.operation.right;
+  symbol* leftID = NULL;
+  symbol* rightID = NULL;
+
   if(left->type == AST_ID)
   {
     if(symTable_lookUp(st, left->component.identifier) == NULL)
@@ -190,6 +200,7 @@ ast* genSymTable_binaryOperation(ast* tree, symTable* st)
       snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : Identifier %s was not declared before use !\n", left->component.identifier);
       genSymTable_error(msg, st->tree, st);
     }
+
   }
   if(right->type == AST_ID)
   {
@@ -200,8 +211,27 @@ ast* genSymTable_binaryOperation(ast* tree, symTable* st)
       genSymTable_error(msg, st->tree, st);
     }
   }
+
   genSymTable_ast(left, st);
   genSymTable_ast(right, st);
+
+  if(tree->type == AST_OP_STEN)
+  {
+    leftID = symTable_lookUp(st, left->component.identifier);
+    rightID = symTable_lookUp(st, right->component.identifier);
+    if(!leftID->isStencil)
+    {
+      char msg[MAX_IDENTIFIER_LENGHT+250];
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : trying to use stencil operator with %s that is not a stencil !\n", right->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+    if(!rightID->isTable)
+    {
+      char msg[MAX_IDENTIFIER_LENGHT+250];
+      snprintf(msg, MAX_IDENTIFIER_LENGHT+250, "Compilation error : trying to use stencil operator with %s that is not an array !\n", right->component.identifier);
+      genSymTable_error(msg, st->tree, st);
+    }
+  }
 
   return tree;
 }

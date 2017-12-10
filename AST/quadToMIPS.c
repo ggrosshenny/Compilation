@@ -38,7 +38,7 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
     temp = table->table[i];
     while(temp != NULL)
     {
-      if(!temp->isConstant && !temp->isFunction && !temp->isLabel && !temp->isTable && !temp->isTabElemAdr)
+      if(!temp->isConstant && !temp->isFunction && !temp->isLabel && !temp->isTable && !temp->isTabElemAdr && !temp->isStencil)
       {
         if(temp->content.type == INT)
         {
@@ -53,7 +53,7 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
       {
         fprintf(mips->fileMIPS, "%s:\t.word 0\n", temp->identifier);
       }
-      if(temp->isTable)
+      if((temp->isTable) || (temp->isStencil))
       {
         tabSize = 1;
         tempDim = temp->content.val.dimensions;
