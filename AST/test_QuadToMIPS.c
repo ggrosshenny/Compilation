@@ -147,7 +147,7 @@ int main()
 
   ast* temp6 = ast_concat(temp5, tabInstr);
 
-  // Table access test
+  // Table access test 01
     // ID
   ast* tabIdA = ast_new_identifier("tab");
     // Dimensions
@@ -155,10 +155,35 @@ int main()
   ast* dim2A = ast_new_tabDimension(ast_new_number(2));
   ast* tabDimA = ast_concat(dim1A, dim2A);
 
+  // Table access test 02
+    // ID
+  ast* tabIdA2 = ast_new_identifier("tab");
+    // Dimensions
+  ast* dim1A2 = ast_new_tabDimension(ast_new_number(1));
+  ast* dim2A2 = ast_new_tabDimension(ast_new_number(2));
+  ast* tabDimA2 = ast_concat(dim1A2, dim2A2);
+
   ast* tabAcc = ast_new_tableAccess(tabIdA, tabDimA);
-  ast* tabAccAffId = ast_new_identifier("test");
-  ast* tabAccAfct = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, tabAccAffId), tabAcc);
-  ast* tabAccInstr = ast_new_Instruction(tabAccAfct);
+  ast* tabAcc2 = ast_new_tableAccess(tabIdA2, tabDimA2);
+
+  ast* tabAccBoolExpr = ast_new_boolExpr(ast_new_binaryOperation(AST_BOOL_EQ, tabAcc, tabAcc2), NULL, NULL);
+
+    // TRUE
+  ast* printi_name1tab = ast_new_identifier("printi");
+  ast* printi_argVal1tab = ast_new_number(1);
+  ast* printi_args1tab = ast_new_argument(printi_argVal1tab);
+  ast* printi_call1tab = ast_new_functionCall(printi_name1tab, printi_args1tab);
+  ast* true_instrtab = ast_new_Instruction(printi_call1tab);
+    // FALSE
+  ast* printi_name2tab = ast_new_identifier("printi");
+  ast* printi_argVal2tab = ast_new_number(0);
+  ast* printi_args2tab = ast_new_argument(printi_argVal2tab);
+  ast* printi_call2tab = ast_new_functionCall(printi_name2tab, printi_args2tab);
+  ast* false_instrtab = ast_new_Instruction(printi_call2tab);
+
+  placeGoto(tabAccBoolExpr, true_instrtab, false_instrtab);
+  ast* if_astTab =  ast_new_controlStructure(AST_IF, tabAccBoolExpr, true_instrtab, false_instrtab, NULL, NULL);
+  ast* tabAccInstr = ast_new_Instruction(if_astTab);
 
   ast* tempTableOp = ast_concat(temp6, tabAccInstr);
 

@@ -201,8 +201,39 @@ void genMIPS_genAffectation(MIPS* mips, quad* qd)
 
 void genMIPS_genAdd(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
+
   fprintf(mips->fileMIPS, "add\t$t2, $t0, $t1\n");
   fprintf(mips->fileMIPS, "sw\t$t2, %s\n", qd->res->identifier);
 }
@@ -210,8 +241,38 @@ void genMIPS_genAdd(MIPS* mips, quad* qd)
 
 void genMIPS_genSub(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "sub\t$t2, $t0, $t1\n");
   fprintf(mips->fileMIPS, "sw\t$t2, %s\n", qd->res->identifier);
 }
@@ -219,8 +280,38 @@ void genMIPS_genSub(MIPS* mips, quad* qd)
 
 void genMIPS_genMult(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "mult\t$t0, $t1\n");
   fprintf(mips->fileMIPS, "mflo\t$t2\n");
   fprintf(mips->fileMIPS, "sw\t$t2, %s\n", qd->res->identifier);
@@ -229,8 +320,38 @@ void genMIPS_genMult(MIPS* mips, quad* qd)
 
 void genMIPS_genDiv(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "div\t$t0, $t1\n");
   fprintf(mips->fileMIPS, "mflo\t$t2\n");
   fprintf(mips->fileMIPS, "sw\t$t2, %s\n", qd->res->identifier);
@@ -239,7 +360,24 @@ void genMIPS_genDiv(MIPS* mips, quad* qd)
 
 void genMIPS_genIncr(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
   fprintf(mips->fileMIPS, "addi\t$t1, $t0, 1\n");
   fprintf(mips->fileMIPS, "sw\t$t1, %s\n", qd->res->identifier);
 }
@@ -247,7 +385,24 @@ void genMIPS_genIncr(MIPS* mips, quad* qd)
 
 void genMIPS_genDecr(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
   fprintf(mips->fileMIPS, "li\t$t1, 1\n");
   fprintf(mips->fileMIPS, "sub\t$t2, $t0, $t1\n");
   fprintf(mips->fileMIPS, "sw\t$t2, %s\n", qd->res->identifier);
@@ -256,7 +411,24 @@ void genMIPS_genDecr(MIPS* mips, quad* qd)
 
 void genMIPS_genMinus(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
   fprintf(mips->fileMIPS, "li\t$t1, -1\n");
   fprintf(mips->fileMIPS, "mult\t$t0, $t1\n");
   fprintf(mips->fileMIPS, "mflo\t$t2\n");
@@ -367,45 +539,226 @@ quad* genMIPS_genFunctionCall(MIPS* mips, quad* qd, symTable* st, codegen* cg)
 
 void genMIPS_genBranchOnEqual(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "beq\t$t0, $t1, %s\n" , qd->res->identifier);
 }
 
 
 void genMIPS_genBranchOnNotEqual(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "bne\t$t0, $t1, %s\n" , qd->res->identifier);}
 
 
 void genMIPS_genBranchOnGreaterEqual(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "bge\t$t0, $t1, %s\n" , qd->res->identifier);}
 
 
 void genMIPS_genBranchOnLessEqual(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "ble\t$t0, $t1, %s\n" , qd->res->identifier);}
 
 
 void genMIPS_genBranchOnGreaterThan(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
   fprintf(mips->fileMIPS, "bgt\t$t0, $t1, %s\n" , qd->res->identifier);}
 
 
 void genMIPS_genBranchOnLessThan(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
-  fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
-  fprintf(mips->fileMIPS, "blt\t$t0, $t1, %s\n" , qd->res->identifier);}
+  char* temp = NULL;
+  int elemAdr = 0;
+  char* tableName = 0;
+
+  // Table access for left part
+  if(qd->arg1->isTabElemAdr)
+  {
+    temp = qd->arg1->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg1->identifier);
+  }
+  // Table access for right part
+  if(qd->arg2->isTabElemAdr)
+  {
+    temp = qd->arg2->content.val.string;
+    elemAdr = atoi(strtok(temp, " "));
+    tableName = strtok(NULL, " ");
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t1, 0($s1)\n");
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t1, %s\n", qd->arg2->identifier);
+  }
+  fprintf(mips->fileMIPS, "blt\t$t0, $t1, %s\n" , qd->res->identifier);
+}
 
 
 void genMIPS_genGOTO(MIPS* mips, quad* qd)
