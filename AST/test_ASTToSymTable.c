@@ -89,7 +89,7 @@ int main()
   ast* tabDimA = ast_concat(dim1A, dim2A);
 
   ast* tabAcc = ast_new_tableAccess(tabIdA, tabDimA);
-  ast* tabAccAffId = ast_new_id("test");
+  ast* tabAccAffId = ast_new_identifier("test");
   ast* tabAccAfct = ast_new_binaryOperation(AST_OP_AFCT, ast_new_unaryOperation(AST_OP_DECL, tabAccAffId), tabAcc);
   ast* tabAccInstr = ast_new_Instruction(tabAccAfct);
 

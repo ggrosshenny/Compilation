@@ -3,6 +3,7 @@
 
 #include "astToST.h"
 #include <stdio.h>
+#include <string.h>
 #include "quad.h"
 
 
@@ -211,7 +212,25 @@ void genMIPS_genBranchOnLessThan(MIPS* mips, quad* qd);
 void genMIPS_genGOTO(MIPS* mips, quad* qd);
 
 
+/**
+* @brief genMIPS_genLabel Generate the MIPS code for the label creation with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
 void genMIPS_genLabel(MIPS* mips, quad* qd);
+
+
+// ================
+// Table operations
+
+
+/**
+* @brief genMIPS_genTableAffectation Generate the MIPS code for the table element affectation while declaring table with the given quad
+* @param mips MIPS code object
+* @param qd given quad
+**/
+void genMIPS_genTableAffectation(MIPS* mips, quad* qd);
+
 
 
 #endif

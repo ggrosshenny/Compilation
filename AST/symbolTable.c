@@ -165,6 +165,13 @@ void symTable_free(symTable* table)
             free(tempDim);
           }
         }
+        else if(temp->isTabElemAdr)
+        {
+          if(temp->content.type == STRING)
+          {
+            free(temp->content.val.string);
+          }
+        }
         symbol_free(temp);
       }
   }

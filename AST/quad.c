@@ -192,6 +192,10 @@ void codegen_ast_affectation(codegen* cg, enum ast_type type, codegen* left, cod
 
   if(right != NULL)
   {
+    if(right->result->isTabElemAdr)
+    {
+      printf("ElemQuad : %s\n", right->result->content.val.string);
+    }
     quad_add(cg->code, type, left->result, right->result, cg->result);
   }
   else
@@ -549,7 +553,7 @@ void codegen_ast_tableAccess(codegen* cg, ast* tree, symTable* symbol_table)
   dims* tempDim = NULL;
   int dimSizesMultiplication = 1;
   int elementAdr = 0;
-  char tabAcessForMIPSUsage[256];
+  char* tabAcessForMIPSUsage = calloc(256, sizeof(char));
   value val;
 
   // Generate the quad
@@ -579,9 +583,8 @@ void codegen_ast_tableAccess(codegen* cg, ast* tree, symTable* symbol_table)
   elementAdr += indices->component.tableDimensionsList.val->component.number;
   elementAdr *= WORDSIZE;
 
-  snprintf(tabAcessForMIPSUsage, 256, "%d(%s)", elementAdr, tabSymbol->identifier);
+  snprintf(tabAcessForMIPSUsage, 256, "%d %s", elementAdr, tabSymbol->identifier);
   val.string = tabAcessForMIPSUsage;
-  printf("Element adr : %s\n", tabAcessForMIPSUsage);
   elementAdrSymbol = symTable_addTabElemAdr(symbol_table, STRING, val);
   cg->result = elementAdrSymbol;
 

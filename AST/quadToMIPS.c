@@ -24,6 +24,8 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
 {
   MIPS* mips = calloc(1, sizeof(MIPS));
   int i = 0;
+  int tabSize = 0;
+  dims* tempDim = NULL;
   symbol* temp = NULL;
   // Open file
   mips->fileMIPS = fopen(fileName, "w+");
@@ -36,7 +38,7 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
     temp = table->table[i];
     while(temp != NULL)
     {
-      if(!temp->isConstant && !temp->isFunction && !temp->isLabel)
+      if(!temp->isConstant && !temp->isFunction && !temp->isLabel && !temp->isTable && !temp->isTabElemAdr)
       {
         if(temp->content.type == INT)
         {
@@ -46,11 +48,22 @@ MIPS* genMIPS_init(char* fileName, symTable* table)
         {
           fprintf(mips->fileMIPS, "%s:\t.asciiz \"%s\"\n", temp->identifier, temp->content.val.string);
         }
-
       }
       if(temp->isConstant && !temp->isFunction)
       {
         fprintf(mips->fileMIPS, "%s:\t.word 0\n", temp->identifier);
+      }
+      if(temp->isTable)
+      {
+        tabSize = 1;
+        tempDim = temp->content.val.dimensions;
+        while(tempDim != NULL)
+        {
+          tabSize *= tempDim->currentDim;
+          tempDim = tempDim->nextDim;
+        }
+        tabSize *= WORDSIZE;
+        fprintf(mips->fileMIPS, "%s:\t.space %d\n", temp->identifier, tabSize);
       }
 
       temp = temp->next;
@@ -142,6 +155,7 @@ void genMIPS_genCode(char* fileName, codegen* cg , symTable* table)
                           break;
       case AST_CREATE_LABEL: genMIPS_genLabel(mips, ql);
                              break;
+      case AST_TAB_AFCT : genMIPS_genTableAffectation(mips, ql);
 
       default         :   break;
     }
@@ -161,8 +175,23 @@ void genMIPS_genCode(char* fileName, codegen* cg , symTable* table)
 
 void genMIPS_genAffectation(MIPS* mips, quad* qd)
 {
-  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg2->identifier);
-  fprintf(mips->fileMIPS, "sw\t$t0, %s\n", qd->res->identifier);
+  if(qd->arg2->isTabElemAdr)
+  {
+    char* temp = qd->arg2->content.val.string;
+    int elemAdr = atoi(strtok(temp, " "));
+    printf("elemAdr : %d\n", elemAdr);
+    char* tableName = strtok(NULL, " ");
+    printf("tableName : %s\n", tableName);
+    fprintf(mips->fileMIPS, "la\t$s1, %s\n", tableName);
+    fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", elemAdr);
+    fprintf(mips->fileMIPS, "lw\t$t0, 0($s1)\n");
+    fprintf(mips->fileMIPS, "sw\t$t0, %s\n", qd->res->identifier);
+  }
+  else
+  {
+    fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg2->identifier);
+    fprintf(mips->fileMIPS, "sw\t$t0, %s\n", qd->res->identifier);
+  }
 }
 
 
@@ -390,6 +419,17 @@ void genMIPS_genLabel(MIPS* mips, quad* qd)
   fprintf(mips->fileMIPS, "%s:\n", qd->res->identifier);
 }
 
+
+void genMIPS_genTableAffectation(MIPS* mips, quad* qd)
+{
+  // indice, valueCG->result, tabSymbol
+  fprintf(mips->fileMIPS, "la\t$s1, %s\n", qd->res->identifier);
+  fprintf(mips->fileMIPS, "addi\t$s1, $s1, %d\n", qd->arg1->content.val.integer);
+  fprintf(mips->fileMIPS, "lw\t$t0, %s\n", qd->arg2->identifier);
+  fprintf(mips->fileMIPS, "sw\t$t0, 0($s1)\n");
+}
+//lw	$t0, 0($s1)
+//sw $t0, test
 
 
 
