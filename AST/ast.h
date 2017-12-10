@@ -2,6 +2,7 @@
 #define __AST_H_
 
 #include "string.h"
+#include <stdbool.h>
 
 // AST structure
 
@@ -27,6 +28,8 @@ typedef struct s_ast
 {
   // Type of the node
   enum ast_type type;
+  // Bool to know if the AST has to be free
+  bool hasToBeFree;
   // Structure of the node
   union
   {
@@ -129,6 +132,13 @@ ast* ast_concat(ast* right, ast* left);
 * @param tree
 */
 void ast_free(ast* tree);
+
+
+/**
+* @brief ast_copy copy the given ast
+* @param astToCopy ast to copy
+**/
+ast* ast_copy(ast* astToCopy);
 
 
 // Memory allocation

@@ -1,4 +1,6 @@
 #include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include "ast.h"
 
@@ -201,20 +203,18 @@ int main()
 
    ast* tabInstrList = ast_concat(tabInstr, ast_concat(tabAfctInstr1, tabIncrInstr));
 
-    // Main function
-    // ast* arg1ID = ast_new_identifier("arg1");
-    // ast* arg2ID = ast_new_identifier("arg2");
-    // ast* arg1Decl = ast_new_binaryOperation(AST_OP_DECL, arg1ID, NULL);
-    // ast* arg2Decl = ast_new_binaryOperation(AST_OP_DECL, arg2ID, NULL);
-    // ast* arg1ARG = ast_new_argument(arg1Decl);
-    // ast* arg2ARG = ast_new_argument(arg2Decl);
-    // ast* tempArg = ast_concat(arg1ARG, arg2ARG);
-
     ast* funcID = ast_new_identifier("main");
     astTest = ast_new_functionDefinition(funcID, NULL, ast_concat(ast_concat(temp, instr1), ast_concat(afctInstr, ast_concat(ifToInstr, tabInstrList))));
 
+    ast* ast_id_memcpyTest = ast_copy(tabBlock1);
+
+    print_ast(ast_id_memcpyTest, 0);
+    printf("----------------------\n");
+
     print_ast(astTest, 0);
+    printf("sizeof ast : %d\n", sizeof(ast));
     ast_free(astTest);
+    ast_free(ast_id_memcpyTest);
 
     return 0;
 }

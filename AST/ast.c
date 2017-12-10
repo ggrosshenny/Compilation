@@ -275,6 +275,12 @@ void ast_free(ast* tree)
     return;
   }
 
+  if(!tree->hasToBeFree)
+  {
+    free(tree);
+    return;
+  }
+
   switch(tree->type)
   {
     // leafs
@@ -429,6 +435,16 @@ void ast_free(ast* tree)
   }
 }
 
+
+ast* ast_copy(ast* astToCopy)
+{
+  ast* newAst = calloc(1, sizeof(ast));
+  memcpy(newAst, astToCopy, sizeof(ast));
+  newAst->hasToBeFree = false;
+  return newAst;
+}
+
+
 // ===========================
 // Memory allocation functions
 
@@ -438,6 +454,7 @@ ast* ast_new_binaryOperation(enum ast_type type, ast* left0, ast* right0)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = type;
+  newAst->hasToBeFree = true;
   newAst->component.operation.left = left0;
   newAst->component.operation.right = right0;
   return newAst;
@@ -448,6 +465,7 @@ ast* ast_new_unaryOperation(enum ast_type type, ast* operand)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = type;
+  newAst->hasToBeFree = true;
   newAst->component.operation.left = operand;
   newAst->component.operation.right = NULL;
   return newAst;
@@ -459,6 +477,7 @@ ast* ast_new_functionDefinition(ast* id, ast* arguments, ast* functionBody)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_FUNC_DEF;
+  newAst->hasToBeFree = true;
   newAst->component.function.identifier = id;
   newAst->component.function.arguments = arguments;
   newAst->component.function.body = functionBody;
@@ -470,6 +489,7 @@ ast* ast_new_functionCall(ast* id, ast* arguments)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_FUNC_CALL;
+  newAst->hasToBeFree = true;
   newAst->component.function.identifier = id;
   newAst->component.function.arguments = arguments;
   newAst->component.function.body = NULL;
@@ -481,6 +501,7 @@ ast* ast_new_Instruction(ast* instruction0)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_FUNC_BODY;
+  newAst->hasToBeFree = true;
   newAst->component.instructionsList.instruction = instruction0;
   newAst->component.instructionsList.nextInstruction = NULL;
   return newAst;
@@ -490,6 +511,7 @@ ast* ast_new_argument(ast* argument0)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_FUNC_ARG;
+  newAst->hasToBeFree = true;
   newAst->component.argumentsList.argument = argument0;
   newAst->component.argumentsList.nextArg = NULL;
   return newAst;
@@ -530,6 +552,7 @@ void placeGoto(ast* boolTree0, ast* true0, ast* false0){
 ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* true0, ast* false0, ast* varInit0, ast* varUpdate0){
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = type;
+  newAst->hasToBeFree = true;
   newAst->component.boolean.boolExpr = conditionsList0;
   newAst->component.boolean.ast_true = true0;
   newAst->component.boolean.ast_false = false0;
@@ -546,6 +569,7 @@ ast* ast_new_controlStructure(enum ast_type type, ast* conditionsList0, ast* tru
 ast* ast_new_boolExpr(ast* boolExpr0, ast* ast_true0, ast* ast_false0){
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_BOOL_TREE;
+  newAst->hasToBeFree = true;
   newAst->component.boolean.boolExpr = boolExpr0;
   newAst->component.boolean.ast_true = ast_true0;
   newAst->component.boolean.ast_false = ast_false0;
@@ -560,6 +584,7 @@ ast* ast_new_tabDeclaration(ast* identifier0, ast* dimensions0, ast* elements0)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_TAB_DECL;
+  newAst->hasToBeFree = true;
   newAst->component.tableDeclaration.identifier = identifier0;
   newAst->component.tableDeclaration.dimensions = dimensions0;
   newAst->component.tableDeclaration.elements = elements0;
@@ -571,6 +596,7 @@ ast* ast_new_tableAccess(ast* identifier0, ast* indices0)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_TAB_ACSS;
+  newAst->hasToBeFree = true;
   newAst->component.tableDeclaration.identifier = identifier0;
   newAst->component.tableDeclaration.dimensions = indices0;
   return newAst;
@@ -581,6 +607,7 @@ ast* ast_new_tabDimension(ast* valeur)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_TAB_DIM;
+  newAst->hasToBeFree = true;
   newAst->component.tableDimensionsList.val = valeur;
   newAst->component.tableDimensionsList.nextDim = NULL;
   return newAst;
@@ -591,6 +618,7 @@ ast* ast_new_tabElements(ast* element)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_TAB_ELEM;
+  newAst->hasToBeFree = true;
   newAst->component.tableElementsList.currentElem = element;
   newAst->component.tableElementsList.nextElem = NULL;
   return newAst;
@@ -601,6 +629,7 @@ ast* ast_new_tableElementsBlock(ast* block)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_TAB_BLCK;
+  newAst->hasToBeFree = true;
   newAst->component.tableElementsBlock.elements = block;
   newAst->component.tableElementsBlock.nextBlock = NULL;
   return newAst;
@@ -614,6 +643,7 @@ ast* ast_new_number(int value)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_INT;
+  newAst->hasToBeFree = true;
   newAst->component.number = value;
   return newAst;
 }
@@ -623,6 +653,7 @@ ast* ast_new_string(char* str)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_STR;
+  newAst->hasToBeFree = true;
   newAst->component.string = strndup(str, MAX_STR_LENGHT);
   return newAst;
 }
@@ -632,6 +663,7 @@ ast* ast_new_identifier(char* id)
 {
   ast* newAst = calloc(1, sizeof(ast));
   newAst->type = AST_ID;
+  newAst->hasToBeFree = true;
   newAst->component.identifier = strndup(id, MAX_IDENTIFIER_LENGHT);
   return newAst;
 }
