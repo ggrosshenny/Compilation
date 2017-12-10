@@ -19,7 +19,7 @@
   int DEFINE_FOUND_PREPROCESSED_VAR_USE = 3;
 
 %}
-TYPE      int
+TYPE      int|stencil
 STRING    \"([^\"]|\\.)*\"
 
 IF_KW     if
@@ -30,7 +30,7 @@ DEFINE    #define
 
 NUMBER    0|([1-9][0-9]*)
 ID        [a-zA-Z_]([a-zA-Z0-9_])*
-OP        \+|-|\*|\/|\(|\)|\;|\,|\{|\}|\=|\<|\>|\[|\]
+OP        \+|-|\*|\/|\(|\)|\;|\,|\{|\}|\=|\<|\>|\[|\]|\$
 
 INCR_OP   \+\+
 DECR_OP   --
