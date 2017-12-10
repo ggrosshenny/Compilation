@@ -3,12 +3,15 @@
   #include <stdio.h>
   #include <stdlib.h>
   #include "AST/quadToMIPS.h"
+  #include "AST/define.h"
 
   int yylex();
   void yyerror(const char*);
   extern FILE *yyin;
   extern int yylineno;
   void yyfree();
+
+  defineList* defList = NULL;
 
 %}
 %error-verbose
@@ -22,6 +25,7 @@
 }
 
   // TYPES
+%type <ast> defined_or_id;
 %type <ast> expression;
 %type <ast> statement;
 %type <ast> statement_equal_value;
@@ -35,13 +39,14 @@
 %type <ast> arguments_call;
 %type <ast> function_declaration;
 %type <ast> function_call;
-%type <ast> function;
 %type <ast> curly_brackets;
 %type <ast> curly_bracket_content_table;
 %type <ast> brackets_table;
 %type <ast> brackets_idx_value;
 %type <ast> table_declaration;
 %type <ast> table_access;
+%type <ast> define_body;
+%type <ast> program;
 %type <ast> axiom;
 
   // TOKENS
@@ -49,7 +54,8 @@
 %token <string> IDENTIFIER
 %token <string> TYPE
 %token <string> STRING_LIT
-%token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ AND OR NOT DEFINED
+%token <string> DEFINED
+%token IF ELSE WHILE FOR DECR INCR EQ LEQ GEQ NOTEQ AND OR NOT DEFINE DEFINE_BODY_END
 
   // OPERATOR PRIORITIES
 %left '+' '-'
@@ -62,7 +68,8 @@
 
 %%
 axiom:
-  function                      {  print_ast($$,0);
+  program                      {  print_ast($$,0);
+                                  free_defineList(defList);
 /*
                                   symTable* symTableTest = symTable_init($$);
 
@@ -77,11 +84,41 @@ axiom:
                                   codegen_free(cgBis);
 */
                                   ast_free($$);
+
                                   exit(0);
                                 }
   ;
 
 
+
+program:
+  function_declaration program           { $$ = ast_concat($1, $2); }
+  | define_declaration program           { $$ = $2; }
+  | function_declaration                 { $$ = $1; }
+  ;
+
+
+
+define_declaration:
+  DEFINE DEFINED define_body DEFINE_BODY_END            { if(defList == NULL){
+                                                             defList = new_define($2, $3);
+                                                           }
+                                                           else{
+                                                             defineList* d = search_existingDefine(defList, $2);
+                                                             if(d == NULL){
+                                                               add_define_to_list(defList, new_define($2, $3));
+                                                             }
+                                                             else{
+                                                               printf("Second declaration of a unique defined value\n");
+                                                               exit(1);
+                                                             }
+                                                           }
+                                                         }
+
+define_body:
+  instructions_block          { $$ = $1; }
+  | expression                { $$ = $1; }
+  ;
 
 table_declaration:
   TYPE IDENTIFIER brackets_table                                            { $$ = ast_new_tabDeclaration(ast_new_identifier($2), $3, NULL); free($1); free($2); }
@@ -93,13 +130,13 @@ brackets_table:
   | '[' brackets_idx_value ']'                { $$ = ast_new_tabDimension($2); }
   ;
 
-  brackets_idx_value:
-    expression                        { $$ = $1; }
-    | IDENTIFIER DECR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1))); free($1); }
-    | IDENTIFIER INCR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1))); free($1); }
-    | IDENTIFIER brackets_table DECR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
-    | IDENTIFIER brackets_table INCR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
-    ;
+brackets_idx_value:
+  expression                        { $$ = $1; }
+  | IDENTIFIER DECR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_DECR, ast_new_identifier($1))); free($1); }
+  | IDENTIFIER INCR                 { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_identifier($1), ast_new_unaryOperation(AST_OP_INCR, ast_new_identifier($1))); free($1); }
+  | IDENTIFIER brackets_table DECR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_DECR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
+  | IDENTIFIER brackets_table INCR  { $$ = ast_new_binaryOperation(AST_OP_AFCT, ast_new_tableAccess(ast_new_identifier($1), $2), ast_new_unaryOperation(AST_OP_INCR, ast_new_tableAccess(ast_new_identifier($1), $2))); free($1); }
+  ;
 
 curly_brackets:
   '{' curly_bracket_content_table '}' ',' curly_brackets                  { $$ = ast_concat(ast_new_tableElementsBlock($2), $5) ; }
@@ -120,14 +157,9 @@ curly_bracket_content_table:
   | curly_brackets                                                        { $$ = ast_new_tabElements($1); }
   ;
 
-function:
-  function_declaration function           { $$ = ast_concat($1, $2); }
-  | function_declaration                  { $$ = $1; }
-  ;
-
 function_call:
-  IDENTIFIER '(' arguments_call ')' ';'                  { $$ = ast_new_functionCall(ast_new_identifier($1), $3); free($1); }
-  | IDENTIFIER '(' ')' ';'                               { $$ = ast_new_functionCall(ast_new_identifier($1), NULL); free($1); }
+  defined_or_id '(' arguments_call ')'                  { $$ = ast_new_functionCall($1, $3); }
+  | defined_or_id '(' ')'                               { $$ = ast_new_functionCall($1, NULL); }
   ;
 
 function_declaration:
@@ -136,10 +168,10 @@ function_declaration:
   ;
 
 arguments_call:
-  IDENTIFIER ',' arguments_call                          { $$ = ast_concat(ast_new_argument(ast_new_identifier($1)), $3); free($1); }
+  defined_or_id ',' arguments_call                       { $$ = ast_concat(ast_new_argument($1), $3); }
   | STRING_LIT ',' arguments_call                        { $$ = ast_concat(ast_new_argument(ast_new_string($1)), $3); free($1); }
   | table_access ',' arguments_call                      { $$ = ast_concat(ast_new_argument($1), $3); }
-  | IDENTIFIER                                           { $$ = ast_new_argument(ast_new_identifier($1)); free($1); }
+  | defined_or_id                                        { $$ = ast_new_argument($1); }
   | STRING_LIT                                           { $$ = ast_new_argument(ast_new_string($1)); free($1); }
   | table_access                                         { $$ = ast_new_argument($1); }
   ;
@@ -157,7 +189,7 @@ instructions_block:
 instruction:
   statement ';'            { $$ = ast_new_Instruction($1); }
   | loop                   { $$ = ast_new_Instruction($1); }
-  | function_call          { $$ = ast_new_Instruction($1); }
+  | function_call ';'      { $$ = ast_new_Instruction($1); }
   | table_declaration ';'  { $$ = ast_new_Instruction($1); }
   ;
 
@@ -224,8 +256,24 @@ expression:
   | '(' expression ')'        { $$ = $2; }
   | '-' expression            { $$ = ast_new_unaryOperation(AST_OP_MINUS, $2); }
   | NUMBER                    { $$ = ast_new_number($1); }
-  | IDENTIFIER                { $$ = ast_new_identifier($1); free($1); }
+  | defined_or_id             { $$ = $1; }
   | table_access              { $$ = $1; }
+  ;
+
+
+defined_or_id:
+  IDENTIFIER                  { $$ = ast_new_identifier($1); free($1); }
+  | DEFINED                   { defineList* temp = search_existingDefine(defList, $1);
+                                if(temp != NULL){
+                                  $$ = ast_copy(temp->value);
+                                  free($1);
+                                }
+                                else{
+                                  printf("Error : undefined value %s\n", $1);
+                                  exit(1);
+                                }
+
+                              }
   ;
 
 table_access:
