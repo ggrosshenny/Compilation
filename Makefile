@@ -27,4 +27,4 @@ ast.o: AST/ast.c
 		$(CC) -o $@ -c $< $(CFLAGS)
 
 clean:
-	rm -rf lex.yy.c y.tab.c y.tab.h *.o compilateur
+	rm -rf lex.yy.c y.tab.c y.tab.h *.o test_quadToMIPS.test compilateur

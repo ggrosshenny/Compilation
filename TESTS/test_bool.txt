@@ -1,0 +1,43 @@
+#define HEIGHT 128
+
+int main(){
+    int z = 0;
+    for(int i = 0; i < 10; i++){ /* test2 /* test2bis printf("test2ter"); */
+    /**** test3
+     * test4
+     * test5
+     **/
+        z++; //// Increment
+        printi(z);
+    }
+
+    int max = 0;
+    if(z>5){
+        printi(z);
+        for(int x = 0 ; x != 6 ; x = x + 2){
+            max = max + x;
+            while(z < x){
+                z = z + 1;
+            }
+        }
+    }
+
+    if( (z > 5 && z < 10) || (z == 10) ){
+        
+        if(z != max){
+            printi(z);
+        }
+        else{
+            while(z != max){
+                if( z <  max){
+                    z++;
+                }
+                else{
+                    z--;
+                }
+            }
+            printi(max);
+        }
+    }
+}
+

@@ -42,6 +42,8 @@ AND_OP    \&\&
 OR_OP     \|\|
 NOT_OP    !
 
+COMMENTS ("/*"([^*]*[*]+[^*/])*[^*]*[*]+"/")|("//"(.*)"\n")
+
 
 %%
 
@@ -51,9 +53,13 @@ NOT_OP    !
 
 {TYPE}     { yylval.string = strdup(yytext);
              return TYPE;
+
            }
 
-{STRING}   { yylval.string = strdup(yytext);
+{STRING}   {
+             char* s = calloc(strlen(yytext)-2, sizeof(char));
+             strncat(s, yytext+1, strlen(yytext)-2);
+             yylval.string = s;
              return STRING_LIT;
            }
 
@@ -120,7 +126,6 @@ NOT_OP    !
 
 
 \n         { if(defineCalled == DEFINE_DECLARATION_BODY_EXPECTED){
-                printf("prout\n");
                 defineCalled = OUT_OF_DEFINE_USE_OR_DECL;
                 return DEFINE_BODY_END;
              }
@@ -128,7 +133,7 @@ NOT_OP    !
 
 [\n\t\ ]
 
-
+{COMMENTS}
 
 
 

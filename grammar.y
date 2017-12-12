@@ -90,9 +90,15 @@ axiom:
 
 
 program:
-  function_declaration program           { $$ = ast_concat($1, $2); }
+  function_declaration program           { if($2 == NULL){
+                                             fprintf(stderr, "preprocessed variable defined at the end of the file : please put it somewhere else\n");
+                                             exit(1);
+                                           }
+                                           $$ = ast_concat($1, $2);
+                                         }
   | define_declaration program           { $$ = $2; }
   | function_declaration                 { $$ = $1; }
+  | define_declaration                   { $$ = NULL; }
   ;
 
 
@@ -135,7 +141,7 @@ stencil_declaration:
 
 stencil_application:
   stencil_call '$' table_access         { $$ = ast_new_binaryOperation(AST_OP_STEN, $1, $3); }
-  | table_access '$' stencil_call         { $$ = ast_new_binaryOperation(AST_OP_STEN, $1, $1); }
+  | table_access '$' stencil_call         { $$ = ast_new_binaryOperation(AST_OP_STEN, $3, $1); }
   ;
 
 stencil_call:
@@ -195,9 +201,11 @@ stencil_call:
     defined_or_id ',' arguments_call                       { $$ = ast_concat(ast_new_argument($1), $3); }
     | STRING_LIT ',' arguments_call                        { $$ = ast_concat(ast_new_argument(ast_new_string($1)), $3); free($1); }
     | table_access ',' arguments_call                      { $$ = ast_concat(ast_new_argument($1), $3); }
+    | NUMBER ','arguments_call                             { $$ = ast_concat(ast_new_argument(ast_new_number($1)), $3); }
     | defined_or_id                                        { $$ = ast_new_argument($1); }
     | STRING_LIT                                           { $$ = ast_new_argument(ast_new_string($1)); free($1); }
     | table_access                                         { $$ = ast_new_argument($1); }
+    | NUMBER                                               { $$ = ast_new_argument(ast_new_number($1)); }
     ;
 
   arguments_declaration:
@@ -238,8 +246,8 @@ stencil_call:
   conditions_list:
     conditions_list AND conditions_list             { $1->component.boolean.ast_true = $3; }
       | conditions_list OR conditions_list          { $1->component.boolean.ast_false = $3; }
-      | '(' conditions_list ')'                     { $$ = ast_new_boolExpr($2, NULL, NULL); }
-      | NOT conditions_list                         { $$ = ast_new_boolExpr($2, $2->component.boolean.ast_false, $2->component.boolean.ast_true); }
+      | '(' conditions_list ')'                     { $$ = $2; }
+      | NOT conditions_list                         { $$ = ast_new_boolExpr($2->component.boolean.boolExpr, $2->component.boolean.ast_false, $2->component.boolean.ast_true); free($2); }
       | condition                                   { $$ = ast_new_boolExpr($1, NULL, NULL); }
       ;
 
@@ -318,6 +326,5 @@ stencil_call:
       yyparse();
     } while (!feof(yyin));
     fclose(yyin);
-    //yyfree();
     return 0;
-  }
+}

@@ -1,0 +1,22 @@
+#define DIM 3
+#define NB_ELEM 3*3
+
+/**
+ * test application de stencil sur tableau
+ * par itération de boucle
+ **/
+int main(){
+
+  int tab[3][3]={{1,2,3}, {4,5,6}, {7,8,9}};
+
+  stencil s{1, 2} = {{1,0,-1}, {2,0,-2}, {1,0,-1}};
+
+  int sum = 0;
+  for(int i = 0; i < DIM ; i++){
+     sum = sum + (tab[i][i]$s);
+
+  }
+
+  printf("coucou\n");
+  printi(sum);
+}
